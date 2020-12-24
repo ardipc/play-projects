@@ -5,16 +5,31 @@ import { Modal, Button } from 'react-bootstrap';
 class LayoutNav extends React.Component {
 
   state = {
-    isLogin: false
+    isLogin: false,
+    isRegister: false,
+    isForgot: false
   }
 
   showLogin = e => {
     e.preventDefault();
-    this.setState({isLogin: true});
+    this.setState({isLogin: true, isRegister: false, isForgot: false});
   }
-
   closeLogin() {
     this.setState({isLogin: false});
+  }
+  showRegister = e => {
+    e.preventDefault();
+    this.setState({isRegister: true, isLogin:false, isForgot: false});
+  }
+  closeRegister() {
+    this.setState({isRegister: false});
+  }
+  showForgot = e => {
+    e.preventDefault();
+    this.setState({isForgot: true, isLogin: false, isRegister: false});
+  }
+  closeForgot(){
+    this.setState({isForgot: false});
   }
 
   render() {
@@ -57,13 +72,10 @@ class LayoutNav extends React.Component {
           </div>
 
           <Modal show={this.state.isLogin} onHide={this.closeLogin.bind(this)} animation={false}>
-            <Modal.Header closeButton>
-              <Modal.Title>Login</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
+             <Modal.Body>
             <div class="card">
               <div class="card-body login-card-body">
-                <p class="login-box-msg">Sign in to start your session</p>
+                <p class="login-box-msg">Sign in to find a new journey</p>
 
                 <form action="../../index3.html" method="post">
                   <div class="input-group mb-3">
@@ -83,52 +95,111 @@ class LayoutNav extends React.Component {
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-8">
-                      <div class="icheck-primary">
-                        <input type="checkbox" id="remember" />
-                        <label for="remember">
-                          Remember Me
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-4">
+                    <div class="col-12">
                       <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                    </div><br />
+                    <div class="col-12 mt-2">
+                      <button onClick={this.showRegister} type="submit" class="btn btn-success btn-block">Register</button>
                     </div>
                   </div>
                 </form>
 
-                <div class="social-auth-links text-center mb-3">
-                  <p>- OR -</p>
-                  <a href="#" class="btn btn-block btn-primary">
-                    <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
-                  </a>
-                  <a href="#" class="btn btn-block btn-danger">
-                    <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
-                  </a>
-                </div>
-
                 <p class="mb-1">
-                  <a href="forgot-password.html">I forgot my password</a>
-                </p>
-                <p class="mb-0">
-                  <a href="register.html" class="text-center">Register a new membership</a>
+                  <a href="#" onClick={this.showForgot}>I forgot my password</a>
                 </p>
               </div>
             </div>
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={this.closeLogin.bind(this)}>
-                Close
-              </Button>
-              <Button variant="primary" onClick={this.closeLogin.bind(this)}>
-                Save Changes
-              </Button>
-            </Modal.Footer>
+          </Modal>
+
+          <Modal show={this.state.isForgot} onHide={this.closeLogin.bind(this)} animation={false}>
+             <Modal.Body>
+            <div class="card">
+              <div class="card-body login-card-body">
+                <p class="login-box-msg">Sign in to find a new journey</p>
+
+                <form action="../../index3.html" method="post">
+                  <div class="input-group mb-3">
+                    <input type="email" class="form-control" placeholder="Email" />
+                    <div class="input-group-append">
+                      <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="input-group mb-3">
+                    <input type="password" class="form-control" placeholder="Number key" />
+                    <div class="input-group-append">
+                      <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                    </div><br />
+                  </div>
+                </form>
+
+                <p class="mb-1">
+                  <a href="#" onClick={this.showLogin}>Login</a>
+                </p>
+              </div>
+            </div>
+            </Modal.Body>
+          </Modal>
+
+
+          <Modal show={this.state.isRegister} onHide={this.closeRegister.bind(this)} animation={false}>
+             <Modal.Body>
+            <div class="card">
+              <div class="card-body login-card-body">
+                <p class="login-box-msg">Sign up will make you closer to find a new journey</p>
+
+                <form action="../../index3.html" method="post">
+                  <div class="input-group mb-3">
+                    <input type="email" class="form-control" placeholder="Email" />
+                    <div class="input-group-append">
+                      <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Name" />
+                    <div class="input-group-append">
+                      <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="input-group mb-3">
+                    <input type="password" class="form-control" placeholder="Password" />
+                    <div class="input-group-append">
+                      <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12 mt-2">
+                      <button type="submit" class="btn btn-success btn-block">Register</button>
+                    </div>
+                  </div>
+                </form>
+
+                <p class="mb-1">
+                  <a href="#" onClick={this.showLogin}>Have a Account? Login</a>
+                </p>
+              </div>
+            </div>
+            </Modal.Body>
           </Modal>
 
           <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
             <li class="nav-item">
-              <a href="#" class="nav-link">Daftar</a>
+              <a onClick={this.showRegister} href="#" class="nav-link">Daftar</a>
             </li>
             <li class="nav-item">
               <a onClick={this.showLogin} href="#" class="nav-link">Masuk</a>
@@ -140,5 +211,6 @@ class LayoutNav extends React.Component {
   }
 
 }
+
 
 export default LayoutNav;
