@@ -1,6 +1,9 @@
 import './App.css';
 import React from 'react';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import Public from './routes/public';
 import Private from './routes/private';
 
@@ -38,7 +41,10 @@ class App extends React.Component {
     const Main = ({isPrivate}) => isPrivate ? <Private changeToPrivate={this.changeToPrivate} /> : <Public changeToPrivate={this.changeToPrivate} />;
 
     return (
-      <Main isPrivate={this.state.isLogin} />
+      <>
+        <Main isPrivate={this.state.isLogin} />
+        <ToastContainer autoClose={2000} />
+      </>
     );
   }
 

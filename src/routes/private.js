@@ -15,6 +15,12 @@ import ProjectsBuat from '../ui/projects/buat';
 import ProjectDetail from '../ui/projects/detail';
 import ProjectEdit from '../ui/projects/edit';
 
+import UserLevel from '../ui/master/level';
+
+import Clients from '../ui/clients/index';
+
+import NotFound from '../ui/notfound/index';
+
 class Private extends React.Component {
 
   state = {
@@ -33,6 +39,12 @@ class Private extends React.Component {
           <Route path="/projects-buat"><ProjectsBuat /></Route>
           <Route path="/projects-detail"><ProjectDetail /></Route>
           <Route path="/projects-edit"><ProjectEdit /></Route>
+
+          <Route path="/user-level"><UserLevel /></Route>
+
+          <Route path="/clients"><Clients /></Route>
+
+          <Route><NotFound /></Route>
         </Switch>
 
         <LayoutFoot />
