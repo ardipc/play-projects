@@ -3,7 +3,8 @@ import React from 'react';
 class ProjectsIndex extends React.Component {
 
   state = {
-
+    name: JSON.parse(localStorage.getItem('user')).Name,
+    level: JSON.parse(localStorage.getItem('user')).LevelID
   }
 
   render() {
@@ -14,7 +15,7 @@ class ProjectsIndex extends React.Component {
           <div class="container">
             <div class="row mb-2">
               <div class="col-sm-6">
-                <h1 class="m-0"> Welcome to <b>ProjectsIndex</b></h1>
+                <h1 class="m-0"> Welcome to <b>{this.state.name}</b></h1>
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
