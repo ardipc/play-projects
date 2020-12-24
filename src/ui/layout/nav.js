@@ -5,19 +5,30 @@ import { Modal, Button } from 'react-bootstrap';
 class LayoutNav extends React.Component {
 
   state = {
-    isLogin: false
+    isLogin: false,
+
+    checkLogin: localStorage.getItem('isLogin')
   }
 
   showLogin = e => {
     e.preventDefault();
     this.setState({isLogin: true});
+    this.props.changeToPrivate(true);
   }
 
   closeLogin() {
     this.setState({isLogin: false});
   }
 
+  keluarSistem = e => {
+    e.preventDefault();
+    this.props.changeToPrivate(false);
+  }
+
   render() {
+
+    console.log('state: ', this.state);
+
     return (
       <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
         <div class="container">
@@ -127,12 +138,26 @@ class LayoutNav extends React.Component {
           </Modal>
 
           <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-            <li class="nav-item">
-              <a href="#" class="nav-link">Daftar</a>
-            </li>
-            <li class="nav-item">
-              <a onClick={this.showLogin} href="#" class="nav-link">Masuk</a>
-            </li>
+          
+            {
+              !this.state.checkLogin &&
+              <>
+                <li class="nav-item">
+                  <a href="#" class="nav-link">Daftar</a>
+                </li>
+                <li class="nav-item">
+                  <a onClick={this.showLogin} href="#" class="nav-link">Masuk</a>
+                </li>
+              </>
+            }
+
+            {
+              this.state.checkLogin &&
+              <li class="nav-item">
+                <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
+              </li>
+            }
+
           </ul>
         </div>
       </nav>
