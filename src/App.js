@@ -17,6 +17,7 @@ class App extends React.Component {
       localStorage.clear();
       window.location.href = '/';
     }
+
     this.setState({ isLogin: value })
   }
 

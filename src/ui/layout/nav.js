@@ -2,18 +2,25 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
 
+import axios from 'axios';
+import { API_URL } from '../../config/env';
+
 class LayoutNav extends React.Component {
 
   state = {
+    checkLogin: localStorage.getItem('isLogin'),
     isLogin: false,
-    checkLogin: localStorage.getItem('isLogin')
     isRegister: false,
-    isForgot: false
+    isForgot: false,
+
+    name: '',
+    email: '',
+    pass: '',
+    message: 'Sign in to find a new journey',
   }
 
   showLogin = e => {
     e.preventDefault();
-    this.props.changeToPrivate(true);
     this.setState({isLogin: true, isRegister: false, isForgot: false});
   }
 
@@ -42,6 +49,47 @@ class LayoutNav extends React.Component {
   keluarSistem = e => {
     e.preventDefault();
     this.props.changeToPrivate(false);
+  }
+
+  masukSistem = e => {
+    e.preventDefault();
+    let { email, pass } = this.state;
+
+    let url = `${API_URL}/api/user?_fields=IDUser,Name,Email,LevelID&_where=(Email,eq,${email})~and(Password,eq,${pass})`;
+    axios.get(url).then(res => {
+      console.log('repon: ', res.data);
+      let data = res.data;
+
+      if(data.length === 1) {
+        localStorage.setItem('user', JSON.stringify(data[0]));
+        this.props.changeToPrivate(true);
+      } else {
+        this.setState({ message: "Email / password salah." })
+      }
+    })
+
+  }
+
+  daftarSistem = e => {
+    e.preventDefault();
+    let { name, email, pass } = this.state;
+
+    let form = {
+      Name: name,
+      Email: email,
+      Password: pass,
+      LevelID: '3'
+    };
+
+    let url = `${API_URL}/api/user`;
+    axios.post(url, form).then(res => {
+      let data = res.data;
+      if(data.hasOwnProperty('insertId')) {
+        this.setState({ isLogin: true, isRegister: false, email: '', pass: '' })
+      } else {
+        this.setState({ message: 'Something wrong.' })
+      }
+    })
   }
 
   render() {
@@ -89,11 +137,11 @@ class LayoutNav extends React.Component {
           <Modal show={this.state.isLogin} onHide={this.closeLogin.bind(this)} animation={false}>
             <div class="card" style={{marginBottom: 0}}>
               <div class="card-body login-card-body">
-                <p class="login-box-msg">Sign in to find a new journey</p>
+                <p class="login-box-msg">{this.state.message}</p>
 
-                <form action="../../index3.html" method="post">
+                <form>
                   <div class="input-group mb-3">
-                    <input type="email" class="form-control" placeholder="Email" />
+                    <input onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" />
                     <div class="input-group-append">
                       <div class="input-group-text">
                         <span class="fas fa-envelope"></span>
@@ -101,7 +149,7 @@ class LayoutNav extends React.Component {
                     </div>
                   </div>
                   <div class="input-group mb-3">
-                    <input type="password" class="form-control" placeholder="Password" />
+                    <input onChange={e => this.setState({ pass: e.target.value })} value={this.state.pass} type="password" class="form-control" placeholder="Password" />
                     <div class="input-group-append">
                       <div class="input-group-text">
                         <span class="fas fa-lock"></span>
@@ -110,7 +158,7 @@ class LayoutNav extends React.Component {
                   </div>
                   <div class="row">
                     <div class="col-12">
-                      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                      <button type="button" onClick={this.masukSistem} class="btn btn-primary btn-block">Sign In</button>
                     </div><br />
                     <div class="col-12 mt-2">
                       <button onClick={this.showRegister} type="submit" class="btn btn-success btn-block">Register</button>
@@ -125,7 +173,7 @@ class LayoutNav extends React.Component {
             </div>
           </Modal>
 
-          <Modal show={this.state.isForgot} onHide={this.closeLogin.bind(this)} animation={false}>
+          <Modal show={this.state.isForgot} onHide={this.closeForgot.bind(this)} animation={false}>
             <div class="card" style={{marginBottom: 0}}>
               <div class="card-body login-card-body">
                 <p class="login-box-msg">Sign in to find a new journey</p>
@@ -161,15 +209,14 @@ class LayoutNav extends React.Component {
             </div>
           </Modal>
 
-
           <Modal show={this.state.isRegister} onHide={this.closeRegister.bind(this)} animation={false}>
             <div class="card" style={{marginBottom: 0}}>
               <div class="card-body login-card-body">
-                <p class="login-box-msg">Sign up will make you closer to find a new journey</p>
+                <p class="login-box-msg">{this.state.message}</p>
 
-                <form action="../../index3.html" method="post">
+                <form>
                   <div class="input-group mb-3">
-                    <input type="email" class="form-control" placeholder="Email" />
+                    <input onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" />
                     <div class="input-group-append">
                       <div class="input-group-text">
                         <span class="fas fa-envelope"></span>
@@ -177,7 +224,7 @@ class LayoutNav extends React.Component {
                     </div>
                   </div>
                   <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Name" />
+                    <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
                     <div class="input-group-append">
                       <div class="input-group-text">
                         <span class="fas fa-lock"></span>
@@ -185,7 +232,7 @@ class LayoutNav extends React.Component {
                     </div>
                   </div>
                   <div class="input-group mb-3">
-                    <input type="password" class="form-control" placeholder="Password" />
+                    <input onChange={e => this.setState({ pass: e.target.value })} value={this.state.pass} type="password" class="form-control" placeholder="Password" />
                     <div class="input-group-append">
                       <div class="input-group-text">
                         <span class="fas fa-lock"></span>
@@ -194,7 +241,7 @@ class LayoutNav extends React.Component {
                   </div>
                   <div class="row">
                     <div class="col-12 mt-2">
-                      <button type="submit" class="btn btn-success btn-block">Register</button>
+                      <button onClick={this.daftarSistem} type="button" class="btn btn-success btn-block">Register</button>
                     </div>
                   </div>
                 </form>
@@ -207,6 +254,7 @@ class LayoutNav extends React.Component {
           </Modal>
 
           <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
+
             {
               !this.state.checkLogin &&
               <>
@@ -225,7 +273,6 @@ class LayoutNav extends React.Component {
                 <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
               </li>
             }
-
 
           </ul>
         </div>
