@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 class LayoutSidebar extends React.Component {
 
   state = {
-    name: JSON.parse(localStorage.getItem('user')).Name,
-    level: JSON.parse(localStorage.getItem('user')).LevelID
+    name: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).Name : 'Anonymous',
+    level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : 'Unknown'
   }
 
   render() {
