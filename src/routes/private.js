@@ -40,8 +40,8 @@ class Private extends React.Component {
         <Switch>
           <Route path="/" exact><HomeIndex /></Route>
           <Route path="/projects"><ProjectsIndex /></Route>
+          <Route path="/projects-detail/:projectId" component={ProjectDetail} />
           <Route path="/projects-buat"><ProjectsBuat /></Route>
-          <Route path="/projects-detail"><ProjectDetail /></Route>
           <Route path="/projects-edit"><ProjectEdit /></Route>
 
           <Route path="/user-level"><UserLevel /></Route>
