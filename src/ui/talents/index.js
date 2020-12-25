@@ -1,108 +1,113 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react';
 import { Modal } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
-import axios from 'axios'
-import { API_URL } from '../../config/env'
+import axios from 'axios';
+import { API_URL } from '../../config/env';
 
-import moment from 'moment-timezone'
-import { toast } from 'react-toastify'
+import moment from 'moment-timezone';
+import { toast } from "react-toastify";
+ 
+class Talents extends React.Component {
+    state = {
+        id: '',
+        name: '',
+        email: '',
+        pass: '',
 
-class Clients extends React.Component {
-  state = {
-    id: '',
-    name: '',
-    email: '',
-    pass: '',
+        list: [],
 
-    list: [],
+        isModal: false,
 
-    isModal: false,
-  }
+    }
 
-  selectClient = e => {
-    e.preventDefault();
-    let IDUser = e.target.getAttribute('data-id');
-    let Name = e.target.getAttribute('data-name');
-    let Email = e.target.getAttribute('data-email');
-    let Pass = e.target.getAttribute('data-pass');
-    this.setState({ id: IDUser, name: Name, email: Email, pass: Pass, isModal: true })
-  }
+    selectTalents = e => {
+        e.preventDefault();
+        let IDUser = e.target.getAttribute('data-id');
+        let Name = e.target.getAttribute('data-name');
+        let Email = e.target.getAttribute('data-email');
+        let Password = e.target.getAttribute('data-pass');
+        this.setState({ id: IDUser, name: Name, email: Email, pass: Password, isModal: true})
 
-  saveClient = e => {
-    e.preventDefault();
-    let { id, name, email, pass } = this.state;
+    }
+    
+    saveTalents = e => {
+      e.preventDefault();
+      let { id, name, email, pass} = this.state;
 
-    if(id) {
-      // ACTION FOR UPDATE
-      let form = {
-        Name: name,
-        Email: email,
-        Password: pass,
-        LevelID: '3'
-      };
-      let url = `${API_URL}/api/user/${id}`;
-      axios.patch(url, form).then(res => {
-        this.fetchClients()
-        this.clearForm();
-        toast.success(`Client has been updated.`)
+        if(id) {
+          let form = {
+            Name: name,
+            Email: email,
+            Password: pass,
+            LevelID: '2'
+          };
+        
+        let url = `${ API_URL }/api/user/${id}`;
+        axios.patch(url, form).then(res => {
+          this.fetchTalents()
+          this.clearForm();
+          toast.success('Talents has been updated')
+        })
+      }
+      else {
+        let form = {
+          Name: name,
+          Email: email,
+          Password: pass,
+          LevelID: '2'
+        };
+        let url = `${API_URL}/api/user/${id}`;
+        axios.post(url, form).then(res => {
+          this.fetchTalents()
+          this.clearForm();
+          toast.success(`New Talents has been saved.`)
+        })
+      }
+    }
+      
+
+    deleteTalents = e => {
+      e.preventDefault();
+      let TalentID = e.target.getAttribute('data-id');
+      let url = `${API_URL}/api/user/${TalentID}`;
+        axios.delete(url).then(res => {
+          toast.error(`Talent has been deleted.`)
+          this.fetchTalents()
+        })
+    }
+
+    componentDidMount() {
+      this.fetchTalents()
+    }
+
+    clearForm() {
+      this.setState({ isModal: false, id: '', name: '', email: '', pass: '' })
+    }
+    
+    fetchTalents() {
+      let url = `${ API_URL }/api/user?_where=(LevelID,eq,2)`;
+      axios.get(url).then(res => {
+        this.setState({ list: res.data})
       })
     }
-    else {
-      let form = {
-        Name: name,
-        Email: email,
-        Password: pass,
-        LevelID: '3'
-      };
-      let url = `${API_URL}/api/user`;
-      axios.post(url, form).then(res => {
-        this.fetchClients()
-        this.clearForm();
-        toast.success(`New client has been saved.`)
-      })
-    }
-  }
 
-  deleteClient = e => {
-    e.preventDefault();
-    let ClientID = e.target.getAttribute('data-id');
-    let url = `${API_URL}/api/user/${ClientID}`;
-    axios.delete(url).then(res => {
-      toast.error(`Client has been deleted.`)
-      this.fetchClients()
-    })
-  }
 
-  componentDidMount() {
-    this.fetchClients()
-  }
 
-  clearForm() {
-    this.setState({ isModal: false, id: '', name: '', email: '', pass: '' })
-  }
-
-  fetchClients() {
-    let url = `${API_URL}/api/user?_where=(LevelID,eq,3)`;
-    axios.get(url).then(res => {
-      this.setState({ list: res.data })
-    })
-  }
-
-  render() {
-    return (
-      <div class="content-wrapper">
+    render() {
+        return(
+            <div class="content-wrapper">
 
         <div class="content-header">
           <div class="container">
             <div class="row mb-2">
               <div class="col-sm-6">
-                <h1 class="m-0">Clients</h1>
+                <h1 class="m-0">Talents</h1>
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                   <li class="breadcrumb-item"><Link to="/">Home</Link></li>
-                  <li class="breadcrumb-item active">Clients</li>
+                  <li class="breadcrumb-item active">Talents</li>
                 </ol>
               </div>
             </div>
@@ -116,11 +121,11 @@ class Clients extends React.Component {
               <div class="col-sm-12">
                 <div class="card">
                   <div class="card-header">
-                    <h3 class="card-title">Clients</h3>
+                    <h3 class="card-title">Talents</h3>
 
                     <div class="card-tools">
                       <button onClick={e => this.setState({ isModal: true })} type="button" class="btn btn-tool border">
-                        <i class="fas fa-plus"></i> Create Client
+                        <i class="fas fa-plus"></i> Create Talents
                       </button>
                     </div>
                   </div>
@@ -153,7 +158,7 @@ class Clients extends React.Component {
                               <td>{item.Email}</td>
                               <td>{moment(item.CreatedAt).format('DD-MM-YYYY HH:mm')}</td>
                               <td>
-                                <a onClick={this.selectClient}
+                                <a onClick={this.selectTalents}
                                   data-id={item.IDUser}
                                   data-name={item.Name}
                                   data-email={item.Email}
@@ -161,7 +166,7 @@ class Clients extends React.Component {
                                   class="btn btn-info btn-sm mr-2" href="#">
                                   <i class="fas fa-pencil-alt"></i>&nbsp;Edit
                                 </a>
-                                <a onClick={this.deleteClient} data-id={item.IDUser} class="btn btn-danger btn-sm" href="#">
+                                <a onClick={this.deleteTalents} data-id={item.IDUser} class="btn btn-danger btn-sm" href="#">
                                   <i class="fas fa-trash"></i>&nbsp;Delete
                                 </a>
                               </td>
@@ -169,7 +174,6 @@ class Clients extends React.Component {
                           ))
                         }
                       </tbody>
-                    
                     </table>
                   </div>
                 </div>
@@ -178,9 +182,9 @@ class Clients extends React.Component {
               <Modal show={this.state.isModal} onHide={this.clearForm.bind(this)} animation={false}>
                 <div class="card" style={{marginBottom: 0}}>
                   <div class="card-body login-card-body">
-                    <p class="login-box-msg">{this.state.id ? 'Update' : 'Create'} Client</p>
+                    <p class="login-box-msg">{this.state.id ? 'Update' : 'Create'} Talents </p>
 
-                    <form onSubmit={this.saveClient}>
+                    <form onSubmit={this.saveTalents}>
                       <div class="input-group mb-3">
                         <input required onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
                         <div class="input-group-append">
@@ -222,8 +226,10 @@ class Clients extends React.Component {
 
       </div>
     
-    )
-  }
+        )
+    }
+
 }
 
-export default Clients;
+
+export default Talents;
