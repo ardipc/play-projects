@@ -139,7 +139,7 @@ class LayoutNav extends React.Component {
               <div class="card-body login-card-body">
                 <p class="login-box-msg">{this.state.message}</p>
 
-                <form>
+                <form onSubmit={this.masukSistem}>
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" />
                     <div class="input-group-append">
@@ -158,10 +158,10 @@ class LayoutNav extends React.Component {
                   </div>
                   <div class="row">
                     <div class="col-12">
-                      <button type="button" onClick={this.masukSistem} class="btn btn-primary btn-block">Sign In</button>
+                      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                     </div><br />
                     <div class="col-12 mt-2">
-                      <button onClick={this.showRegister} type="submit" class="btn btn-success btn-block">Register</button>
+                      <button onClick={this.showRegister} type="button" class="btn btn-success btn-block">Register</button>
                     </div>
                   </div>
                 </form>
