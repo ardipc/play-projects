@@ -10,6 +10,7 @@ import LayoutSidebar from '../ui/layout/sidebar';
 import LayoutFoot from '../ui/layout/foot';
 
 import HomeIndex from '../ui/home/index';
+import NotFound from '../ui/notfound/index';
 
 class Public extends React.Component {
 
@@ -25,6 +26,8 @@ class Public extends React.Component {
 
         <Switch>
           <Route path="/" exact><HomeIndex /></Route>
+
+          <Route><NotFound /></Route>
         </Switch>
 
         <LayoutFoot />
