@@ -82,7 +82,7 @@ class ProjectsIndex extends React.Component {
                               <tr>
                                   <td>{item.IDProject}</td>
                                   <td>
-                                    <Link to="/projects-detail">
+                                    <Link to={`/projects-detail/${item.IDProject}`}>
                                       {item.Name}
                                     </Link>
                                     <br/>

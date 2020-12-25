@@ -1,10 +1,33 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
+import { Link } from 'react-router-dom'
+
+import axios from 'axios'
+import { API_URL } from '../../config/env'
+
+import moment from 'moment-timezone'
+import { toast } from 'react-toastify'
 
 class ProjectDetail extends React.Component{
     state = {
+        projectId: this.props.match.params.projectId,
 
+        project: {}
     }
+
+    componentDidMount() {
+      this.fetchProjectsDetail(this.state.projectId)
+    }
+
+    fetchProjectsDetail(projectId) {
+      axios.get(`${API_URL}/api/project/${projectId}`).then(res => {
+        let data = res.data;
+
+        if(data.length === 1) {
+          this.setState({ project: data[0] })
+        }
+      })
+    }
+
     render(){
         return(
             <div class="content-wrapper">
@@ -12,11 +35,11 @@ class ProjectDetail extends React.Component{
                 <div class="container">
                     <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1 class="m-0"> Welcome to <b>PlayProjects</b></h1>
+                        <h1 class="m-0">Detail Project</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><Link to="/">Home</Link></li>
                         <li class="breadcrumb-item active">Detail</li>
                         </ol>
                     </div>
@@ -51,7 +74,7 @@ class ProjectDetail extends React.Component{
                                     <div class="info-box bg-light">
                                     <div class="info-box-content">
                                         <span class="info-box-text text-center text-muted">Estimated budget</span>
-                                        <span class="info-box-number text-center text-muted mb-0">2300</span>
+                                        <span class="info-box-number text-center text-muted mb-0">{this.state.project.Budget}</span>
                                     </div>
                                     </div>
                                 </div>
@@ -114,7 +137,7 @@ class ProjectDetail extends React.Component{
 
                                     <div class="post">
                                         <div class="user-block">
-                                        <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" /> 
+                                        <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" />
                                         <span class="username">
                                             <a href="#">Jonathan Burke Jr.</a>
                                         </span>
@@ -134,15 +157,17 @@ class ProjectDetail extends React.Component{
                                 </div>
                             </div>
                             <div class="col-12 col-md-12 col-lg-4 order-1 order-md-2">
-                                <h3 class="text-primary"><i class="fas fa-paint-brush"></i> AdminLTE v3</h3>
-                                <p class="text-muted">Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua butcher retro keffiyeh dreamcatcher synth. Cosby sweater eu banh mi, qui irure terr.</p>
+                                <h3 class="text-primary"><i class="fas fa-paint-brush"></i> {this.state.project.Name}</h3>
+                                <p class="text-muted">
+                                  {this.state.project.Description}
+                                </p>
                                 <br />
                                 <div class="text-muted">
-                                <p class="text-sm">Client Company
-                                    <b class="d-block">Deveint Inc</b>
+                                <p class="text-sm">Client
+                                    <b class="d-block">{this.state.project.Client}</b>
                                 </p>
-                                <p class="text-sm">Project Leader
-                                    <b class="d-block">Tony Chicken</b>
+                                <p class="text-sm">Leader
+                                    <b class="d-block">{this.state.project.Leader}</b>
                                 </p>
                                 </div>
 
@@ -165,8 +190,8 @@ class ProjectDetail extends React.Component{
                                 </li>
                                 </ul>
                                 <div class="text-center mt-5 mb-3">
-                                <a href="#" class="btn btn-sm btn-primary">Add files</a>
-                                <a href="#" class="btn btn-sm btn-warning">Report contact</a>
+                                <a href="#" class="btn btn-sm btn-primary mr-2">Add files</a>
+                                <a href="#" class="btn btn-sm btn-warning mr-2">Report contact</a>
                                 </div>
                             </div>
                             </div>
