@@ -215,6 +215,16 @@ class LayoutNav extends React.Component {
                 <p class="login-box-msg">{this.state.message}</p>
 
                 <form>
+                <div class="input-group mb-3">
+                    <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
+                    <div class="input-group-append">
+                      <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                      </div>
+                    </div>
+                  </div>
+                  
+
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" />
                     <div class="input-group-append">
@@ -223,14 +233,7 @@ class LayoutNav extends React.Component {
                       </div>
                     </div>
                   </div>
-                  <div class="input-group mb-3">
-                    <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
-                    <div class="input-group-append">
-                      <div class="input-group-text">
-                        <span class="fas fa-lock"></span>
-                      </div>
-                    </div>
-                  </div>
+                  
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ pass: e.target.value })} value={this.state.pass} type="password" class="form-control" placeholder="Password" />
                     <div class="input-group-append">
