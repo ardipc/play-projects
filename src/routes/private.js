@@ -19,6 +19,10 @@ import UserLevel from '../ui/master/level';
 
 import Clients from '../ui/clients/index';
 
+import Talents from '../ui/talents/index';
+
+import Admins from '../ui/admins/index';
+
 import NotFound from '../ui/notfound/index';
 
 class Private extends React.Component {
@@ -43,6 +47,9 @@ class Private extends React.Component {
           <Route path="/user-level"><UserLevel /></Route>
 
           <Route path="/clients"><Clients /></Route>
+          <Route path="/talents"><Talents /></Route>
+          <Route path="/admins"><Admins /></Route>
+
 
           <Route><NotFound /></Route>
         </Switch>
