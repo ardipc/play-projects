@@ -4,8 +4,11 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { API_URL } from '../../config/env'
 
+import { Modal, Button } from 'react-bootstrap';
+
 import moment from 'moment-timezone'
 import { toast } from 'react-toastify'
+import Select from 'react-select'
 
 class ProjectDetail extends React.Component{
     state = {
@@ -15,6 +18,14 @@ class ProjectDetail extends React.Component{
 
         modul: [],
         task: [],
+
+        isModule: false,
+        id: '',
+        name: '',
+        budget: 0,
+        assign: '',
+
+        listTalents: [],
     }
 
     setToDone = e => {
@@ -39,9 +50,79 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    saveModule = e => {
+      e.preventDefault();
+
+      if(this.state.id) {
+        // action update patch
+        let form = {
+          Name: this.state.name,
+          Budget: this.state.budget,
+          Assign: this.state.assign.value
+        };
+
+        let url = `${API_URL}/api/project_modul/${this.state.id}`;
+        axios.patch(url, form).then(res => {
+          toast.success(`Module has been updated.`)
+          this.fetchModule(this.state.projectId);
+          this.clearModule()
+        })
+      }
+      else {
+        // action create post
+        let form = {
+          Name: this.state.name,
+          Budget: this.state.budget,
+          Assign: this.state.assign.value,
+          ProjectID: this.state.projectId
+        };
+
+        let url = `${API_URL}/api/project_modul`;
+        axios.post(url, form).then(res => {
+          toast.success(`Module has been saved.`)
+          this.fetchModule(this.state.projectId);
+          this.clearModule()
+        })
+      }
+    }
+
+    deleteModule = e => {
+      e.preventDefault()
+      let id = e.target.getAttribute('data-id');
+      let url = `${API_URL}/api/project_modul/${id}`;
+      axios.delete(url).then(res => {
+        toast.error(`Module has been deleted.`)
+        this.fetchModule(this.state.projectId)
+      })
+    }
+
+    selectModule = e => {
+      e.preventDefault();
+      let id      = e.target.getAttribute('data-id')
+      let name    = e.target.getAttribute('data-name')
+      let budget  = e.target.getAttribute('data-budget')
+      let assign  = e.target.getAttribute('data-assign')
+
+      let lihatTalents = [...this.state.listTalents];
+      let getTalents = lihatTalents.filter(item => item.value == parseInt(assign))
+
+      this.setState({
+        isModule: true, id: id, name: name, budget: budget, assign: getTalents[0]
+      })
+    }
+
+    clearModule() {
+      this.setState({ name: '', budget: '', assign: '' })
+    }
+
+    closeModule() {
+      this.setState({ isModule: false, name: '', budget: '', assign: '' })
+    }
+
     componentDidMount() {
       this.fetchProjectsDetail(this.state.projectId)
       this.fetchModule(this.state.projectId)
+      this.fetchTalents()
     }
 
     fetchProjectsDetail(projectId) {
@@ -68,7 +149,11 @@ class ProjectDetail extends React.Component{
     }
 
     fetchModule(projectId) {
-      let url = `${API_URL}/api/project/${projectId}/project_modul`;
+      let url = `${API_URL}/api/xjoin`;
+        url += `?_join=m.project_modul,_lj,u.user`;
+        url += `&_on1=(m.Assign,eq,u.IDUser)`;
+        url += `&_fields=m.IDModule,m.Name,m.Budget,m.Assign,u.Name,m.IsDone`;
+        url += `&_where=(m.ProjectID,eq,${projectId})`;
       axios.get(url).then(res => {
         this.setState({ modul: res.data })
       })
@@ -81,7 +166,23 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    fetchTalents() {
+      let url = `${API_URL}/api/user?_where=(LevelID,eq,2)`;
+      axios.get(url).then(res => {
+
+        let data = [];
+        res.data.map(item => {
+          data.push({ value: item.IDUser, label: item.Name })
+        })
+
+        this.setState({ listTalents: data })
+      })
+    }
+
     render(){
+
+        console.log('state: ', this.state)
+
         return(
             <div class="content-wrapper">
                 <div class="content-header">
@@ -151,50 +252,54 @@ class ProjectDetail extends React.Component{
 
                                         <div class="row">
                                             <div class="col-12">
-                                                <h4>Modules</h4>
+                                                <h4>
+                                                  Modules
+                                                  <button onClick={e => this.setState({ isModule: true })} class="btn btn-sm btn-primary float-right">
+                                                    <i class="fa fa-plus"></i>&nbsp;Add module
+                                                  </button>
+                                                </h4>
+
                                                 <table class="table table-hover projects">
                                                   <tbody>
                                                     {
                                                       this.state.modul.map(item => (
                                                         <tr>
-                                                          <td>#{item.IDModule}</td>
-                                                          <td>{item.Name}</td>
-                                                          <td>{item.Budget}</td>
-                                                          <td>{item.IsDone ? "Done" : "Progress"}</td>
-                                                          <td>
+                                                          <td>#{item.m_IDModule}</td>
+                                                          <td>{item.m_Name}</td>
+                                                          <td>{item.m_Budget}</td>
+                                                          <td>{item.m_IsDone ? "Done" : "Progress"}</td>
+                                                          <td class="text-center">
                                                             {
-                                                              item.Assign &&
+                                                              item.m_Assign &&
                                                               <ul class="list-inline">
                                                                 <li class="list-inline-item">
-                                                                  <img alt="Avatar" class="table-avatar" src="/dist/img/avatar2.png" />
+                                                                  <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
                                                                 </li>
                                                               </ul>
                                                             }
 
                                                             {
-                                                              !item.Assign &&
-                                                              <a onClick={this.setToDone} data-id={item.IDModule} class="btn btn-sm btn-primary mr-2">
-                                                                Assign to Talent
-                                                              </a>
+                                                              !item.m_Assign && <span>-</span>
                                                             }
                                                           </td>
                                                           <td>
                                                             {
-                                                              item.IsDone === 0 &&
-                                                              <a onClick={this.setToDone} data-id={item.IDModule} class="btn btn-sm btn-primary mr-2">
-                                                                Set to done
+                                                              item.m_IsDone === 0 &&
+                                                              <a title="Set to done" onClick={this.setToDone} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
+                                                                <i data-id={item.m_IDModule} class="fa fa-check"></i>
                                                               </a>
                                                             }
 
                                                             {
-                                                              item.IsDone === 1 &&
-                                                              <a onClick={this.setToProgress} data-id={item.IDModule} class="btn btn-sm btn-primary mr-2">
-                                                                Set to progress
+                                                              item.m_IsDone === 1 &&
+                                                              <a title="Set to progress" onClick={this.setToProgress} data-id={item.m_IDModule} class="btn btn-sm btn-danger mr-2">
+                                                                <i data-id={item.m_IDModule} class="fa fa-search"></i>
                                                               </a>
                                                             }
                                                           </td>
                                                           <td>
-                                                            <i style={{cursor: 'pointer'}} class="fa fa-edit"></i>
+                                                            <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
+                                                            <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
                                                           </td>
                                                         </tr>
                                                       ))
@@ -202,6 +307,35 @@ class ProjectDetail extends React.Component{
 
                                                   </tbody>
                                                 </table>
+
+                                                <Modal show={this.state.isModule} onHide={this.closeModule.bind(this)} animation={false}>
+                                                  <div class="card" style={{marginBottom: 0}}>
+                                                    <div class="card-body login-card-body">
+
+                                                      <form onSubmit={this.saveModule}>
+                                                        <div class="form-group mb-3">
+                                                          <label>Name</label>
+                                                          <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                          <label>Budget</label>
+                                                          <input onChange={e => this.setState({ budget: e.target.value })} value={this.state.budget} type="number" class="form-control" placeholder="Budget" />
+                                                        </div>
+
+                                                        <div class="form-group mb-3">
+                                                          <label>Assign to</label>
+                                                          <Select onChange={e => this.setState({ assign: e })} value={this.state.assign} options={this.state.listTalents} />
+                                                        </div>
+                                                        <div class="form-group" style={{marginBottom: 0}}>
+                                                          <button type="submit" class="btn btn-primary float-right">Save</button>
+                                                          <button onClick={this.closeModule.bind(this)} type="button" class="btn btn-default">Close</button>
+                                                        </div>
+                                                      </form>
+
+                                                    </div>
+                                                  </div>
+                                                </Modal>
+
                                             </div>
                                         </div>
 
