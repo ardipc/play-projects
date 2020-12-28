@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import axios from 'axios'
 import { API_URL } from '../../config/env'
+import { toRupiah } from '../../helper/format'
 
 import { Modal, Button } from 'react-bootstrap';
 
@@ -24,6 +25,7 @@ class ProjectDetail extends React.Component{
         fileName: '',
         tempFile: Math.random().toString(36),
 
+        modulDone: 0,
         modul: [],
         isModule: false,
         id: '',
@@ -139,6 +141,15 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    deleteFile = e => {
+      e.preventDefault()
+      let IDFiles = e.target.getAttribute('data-id');
+      let url = `${API_URL}/api/project_files/${IDFiles}`;
+      axios.delete(url).then(res => {
+        this.fetchFiles(this.state.projectId);
+      })
+    }
+
     clearModule() {
       this.setState({ name: '', budget: '', assign: '' })
     }
@@ -188,7 +199,8 @@ class ProjectDetail extends React.Component{
         url += `&_fields=m.IDModule,m.Name,m.Budget,m.Assign,u.Name,m.IsDone`;
         url += `&_where=(m.ProjectID,eq,${projectId})`;
       axios.get(url).then(res => {
-        this.setState({ modul: res.data })
+        let summaryDone = res.data.filter(item => item.m_IsDone === 1);
+        this.setState({ modul: res.data, modulDone: summaryDone.length })
       })
     }
 
@@ -280,7 +292,7 @@ class ProjectDetail extends React.Component{
                                 <div class="info-box bg-light">
                                   <div class="info-box-content">
                                     <span class="info-box-text text-center text-muted">Progress</span>
-                                    <span class="info-box-number text-center text-muted mb-0">{this.state.project.s_Name}</span>
+                                    <span class="info-box-number text-center text-muted mb-0">{this.state.modulDone/this.state.modul.length * 100}%</span>
                                   </div>
                                 </div>
                               </div>
@@ -325,7 +337,7 @@ class ProjectDetail extends React.Component{
                                     <tr>
                                       <td>#{item.m_IDModule}</td>
                                       <td>{item.m_Name}</td>
-                                      <td>{item.m_Budget}</td>
+                                      <td>{toRupiah(item.m_Budget)}</td>
                                       <td>{item.m_IsDone ? "Done" : "Progress"}</td>
                                       <td class="text-center">
                                         { item.m_Assign &&
@@ -343,7 +355,7 @@ class ProjectDetail extends React.Component{
                                         </a>
                                         } { item.m_IsDone === 1 &&
                                         <a title="Set to progress" onClick={this.setToProgress} data-id={item.m_IDModule} class="btn btn-sm btn-danger mr-2">
-                                          <i data-id={item.m_IDModule} class="fa fa-search"></i>
+                                          <i data-id={item.m_IDModule} class="fa fa-history"></i>
                                         </a>
                                         }
                                       </td>
@@ -466,11 +478,14 @@ class ProjectDetail extends React.Component{
                               {
                                 this.state.files.map(item => (
                                   <li>
-                                    <a href={item.Url} target="_blank" class="btn-link text-secondary">
+                                    <div>
                                       <i class={`far fa-fw fa-${item.Icon}`}></i> {item.FileName}
-                                      <i class="fa fa-trash float-right"></i>
-                                      <i class="fa fa-download float-right mr-2"></i>
-                                    </a>
+
+                                      <i style={{cursor: 'pointer'}} onClick={this.deleteFile} data-id={item.IDFiles} class="fa fa-trash float-right"></i>
+                                      <a href={`${API_URL}/download?name=${item.Url}`} target="_blank" class="btn-link text-secondary">
+                                        <i class="fa fa-download float-right mr-2"></i>
+                                      </a>
+                                    </div>
                                   </li>
                                 ))
                               }
