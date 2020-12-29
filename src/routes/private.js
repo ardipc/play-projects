@@ -40,9 +40,11 @@ class Private extends React.Component {
 
         <Switch>
           <Route path="/" exact><HomeIndex /></Route>
-          <Route path="/projects"><ProjectsIndex /></Route>
+
+          {/** ADMIN */}
+          <Route path="/projects" component={ProjectsIndex} />
           <Route path="/projects-detail/:projectId" component={ProjectDetail} />
-          <Route path="/projects-buat"><ProjectsBuat /></Route>
+          <Route path="/projects-buat" component={ProjectsBuat} />
           <Route path="/projects-edit"><ProjectEdit /></Route>
 
           <Route path="/user-level"><UserLevel /></Route>
@@ -52,6 +54,9 @@ class Private extends React.Component {
           <Route path="/talents"><Talents /></Route>
           <Route path="/admins"><Admins /></Route>
 
+          {/** CLIENT */}
+
+          {/** TALENT */}
 
           <Route><NotFound /></Route>
         </Switch>
