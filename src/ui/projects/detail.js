@@ -16,9 +16,8 @@ class ProjectDetail extends React.Component{
 
         project: {},
 
-        modul: [],
-        task: [],
 
+        modul: [],
         isModule: false,
         id: '',
         name: '',
@@ -26,6 +25,11 @@ class ProjectDetail extends React.Component{
         assign: '',
 
         listTalents: [],
+
+        task: [],
+        isTask: false,
+        idTask: '',
+        nameTask: ''
     }
 
     setToDone = e => {
@@ -111,12 +115,65 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    selectModuleTask = e => {
+      e.preventDefault();
+      let getIDModule = e.target.getAttribute('data-id');
+      let getNameModule = e.target.getAttribute('data-name');
+      this.setState({ id: getIDModule, name: getNameModule, isTask: true });
+      this.fetchTask(getIDModule);
+    }
+
+    setTaskToDone = e => {
+      e.preventDefault();
+      let IDTask = e.target.getAttribute('data-id');
+      let form = { IsDone: 1 };
+      let url = `${API_URL}/api/project_task/${IDTask}`;
+      axios.patch(url, form).then(res => {
+        this.fetchTask(this.state.id);
+      })
+    }
+
+    setTaskToProgress = e => {
+      e.preventDefault();
+      let IDTask = e.target.getAttribute('data-id');
+      let form = { IsDone: 0 };
+      let url = `${API_URL}/api/project_task/${IDTask}`;
+      axios.patch(url, form).then(res => {
+        this.fetchTask(this.state.id);
+      })
+    }
+
+    saveTask = e => {
+      e.preventDefault();
+      let form = { ModuleId: this.state.id, Name: this.state.nameTask };
+      let url = `${API_URL}/api/project_task`;
+      axios.post(url, form).then(res => {
+        toast.success(`Task added.`)
+        this.setState({ nameTask: '' })
+        this.fetchTask(this.state.id);
+      })
+    }
+
+    deleteTask = e => {
+      e.preventDefault();
+      let IDTask = e.target.getAttribute('data-id');
+      let url = `${API_URL}/api/project_task/${IDTask}`;
+      axios.delete(url).then(res => {
+        toast.error(`Task deleted.`)
+        this.fetchTask(this.state.id)
+      })
+    }
+
     clearModule() {
       this.setState({ name: '', budget: '', assign: '' })
     }
 
     closeModule() {
       this.setState({ isModule: false, name: '', budget: '', assign: '' })
+    }
+
+    clearTask() {
+      this.setState({ idTask: '', nameTask: '' })
     }
 
     componentDidMount() {
@@ -210,15 +267,18 @@ class ProjectDetail extends React.Component{
                             <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">Projects Detail</h3>
-
-                                <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                </div>
+                                {
+                                  /**
+                                  <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                  */
+                                }
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -265,7 +325,11 @@ class ProjectDetail extends React.Component{
                                                       this.state.modul.map(item => (
                                                         <tr>
                                                           <td>#{item.m_IDModule}</td>
-                                                          <td>{item.m_Name}</td>
+                                                          <td>
+                                                            <a href="#" onClick={this.selectModuleTask} data-id={item.m_IDModule} data-name={item.m_Name}>
+                                                              {item.m_Name}
+                                                            </a>
+                                                          </td>
                                                           <td>{item.m_Budget}</td>
                                                           <td>{item.m_IsDone ? "Done" : "Progress"}</td>
                                                           <td class="text-center">
@@ -331,6 +395,46 @@ class ProjectDetail extends React.Component{
                                                           <button onClick={this.closeModule.bind(this)} type="button" class="btn btn-default">Close</button>
                                                         </div>
                                                       </form>
+
+                                                    </div>
+                                                  </div>
+                                                </Modal>
+
+                                                <Modal show={this.state.isTask} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
+                                                  <div class="card" style={{marginBottom: 0}}>
+                                                    <div class="card-body login-card-body">
+                                                      <h4>Task on module <b>{this.state.name}</b></h4>
+
+                                                      <div class="input-group mt-3">
+                                                        <input onChange={e => this.setState({ nameTask: e.target.value })} value={this.state.nameTask} type="text" class="form-control" />
+                                                        <span class="input-group-append">
+                                                          <button onClick={this.saveTask} type="button" class="btn btn-info btn-flat">Add</button>
+                                                        </span>
+                                                      </div>
+
+                                                      <table class="table mt-3">
+                                                        {
+                                                          this.state.task.map(item => (
+                                                            <tr key={item.IDTask}>
+                                                              <td width="20px">
+                                                                {
+                                                                  item.IsDone === 0 &&
+                                                                  <i onClick={this.setTaskToDone} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-check"></i>
+                                                                }
+
+                                                                {
+                                                                  item.IsDone === 1 &&
+                                                                  <i onClick={this.setTaskToProgress} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-history"></i>
+                                                                }
+                                                              </td>
+                                                              <td style={item.IsDone === 1 ? {textDecoration: 'line-through'} : {}}>{item.Name}</td>
+                                                              <td class="text-right" width="30px">
+                                                                <i onClick={this.deleteTask} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
+                                                              </td>
+                                                            </tr>
+                                                          ))
+                                                        }
+                                                      </table>
 
                                                     </div>
                                                   </div>
