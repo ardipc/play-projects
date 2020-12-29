@@ -80,7 +80,7 @@ class ProjectsIndex extends React.Component {
                           {
                             this.state.list.map(item => (
                               <tr>
-                                  <td>{item.IDProject}</td>
+                                  <td>#{item.IDProject}</td>
                                   <td>
                                     <Link to={`/projects-detail/${item.IDProject}`}>
                                       {item.Name}
