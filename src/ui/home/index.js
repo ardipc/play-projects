@@ -10,8 +10,8 @@ import { toast } from 'react-toastify'
 class HomeIndex extends React.Component {
 
   state = {
-    name: JSON.parse(localStorage.getItem('user')).Name,
-    level: JSON.parse(localStorage.getItem('user')).LevelID,
+    name: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).Name : '',
+    level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
 
     list: [],
 
@@ -27,7 +27,14 @@ class HomeIndex extends React.Component {
   }
 
   fetchProjects() {
-    let url = `${API_URL}/api/project?_sort=-IDProject`;
+    let url = `${API_URL}/api/xjoin`;
+      url += `?_join=ul.user_level,_j,u.user,_j,p.project,_j,uu.user,_j,s.project_status`
+      url += `&_on1=(ul.IDLevel,eq,u.LevelID)`
+      url += `&_on2=(u.IDUser,eq,p.Client)`
+      url += `&_on3=(uu.IDUser,eq,p.Leader)`
+      url += `&_on4=(s.IDStatus,eq,p.StatusID)`
+      url += `&_fields=p.IDProject,p.Name,p.Description,p.Leader,p.Client,p.CreateAt,u.Name,p.Leader,uu.Name,p.StartDate,p.EndDate,p.StatusID,s.Name`
+      url += `&_sort=-p.IDProject`;
     axios.get(url).then(res => {
       this.setState({ list: res.data })
     })
@@ -57,7 +64,14 @@ class HomeIndex extends React.Component {
           <div class="container">
             <div class="row mb-2">
               <div class="col-sm-6">
+              {
+                this.state.name &&
                 <h1 class="m-0"> Welcome back <b>{this.state.name}</b></h1>
+              }
+              {
+                !this.state.name &&
+                <h1 class="m-0"> Welcome to PlayProjects</h1>
+              }
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -145,6 +159,7 @@ class HomeIndex extends React.Component {
                     </div>
                   </div>
                   <div class="card-body p-0">
+
                     <table class="table table-striped projects">
                         <thead>
                             <tr>
@@ -152,81 +167,39 @@ class HomeIndex extends React.Component {
                                 <th>Project Name</th>
                                 <th>Client</th>
                                 <th>Leader</th>
-                                <th>Team Members</th>
-                                <th>Project Progress</th>
                                 <th class="text-center">Status</th>
-                                <th class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                           {
                             this.state.list.map(item => (
                               <tr>
-                                  <td>#{item.IDProject}</td>
+                                  <td>#{item.p_IDProject}</td>
                                   <td>
-                                    <Link to={`/projects-detail/${item.IDProject}`}>
-                                      {item.Name}
+                                    <Link to={`/projects-detail/${item.p_IDProject}`}>
+                                      {item.p_Name}
                                     </Link>
                                     <br/>
                                     <small>
-                                      Created {moment(item.CreatedAt).format('DD.MM.YYYY HH:mm')}
+                                      Created {moment(item.p_CreateAt).format('DD.MM.YYYY HH:mm')}
                                     </small>
                                   </td>
                                   <td>
                                       <ul class="list-inline">
                                           <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar2.png" />
+                                              <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
                                           </li>
                                       </ul>
                                   </td>
                                   <td>
                                       <ul class="list-inline">
                                           <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar.png" />
+                                              <img title={item.uu_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.uu_Name}`} />
                                           </li>
                                       </ul>
-                                  </td>
-                                  <td>
-                                      <ul class="list-inline">
-                                          <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar2.png" />
-                                          </li>
-                                          <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar.png" />
-                                          </li>
-                                      </ul>
-                                  </td>
-                                  <td class="project_progress">
-                                      <div class="progress progress-sm">
-                                          <div class="progress-bar bg-green" role="progressbar" aria-valuenow="57" aria-valuemin="0" aria-valuemax="100" style={{width: '57%'}}>
-                                          </div>
-                                      </div>
-                                      <small>
-                                          57% Complete
-                                      </small>
                                   </td>
                                   <td class="project-state">
-                                      <span class="badge badge-info">On Progress</span>
-                                  </td>
-                                  <td class="project-actions text-center">
-                                      <a class="btn btn-primary btn-sm mr-2" href="#">
-                                          <i class="fas fa-folder"></i>
-                                          &nbsp;View
-                                      </a>
-                                      {
-                                        /**
-                                        <a class="btn btn-info btn-sm mr-2" href="#">
-                                        <i class="fas fa-pencil-alt">
-                                        </i>
-                                        &nbsp;Edit
-                                        </a>
-                                        <a class="btn btn-danger btn-sm mr-2" href="#">
-                                        <i class="fas fa-trash">
-                                        </i>
-                                        &nbsp;Delete
-                                        </a>
-                                        */
-                                      }
+                                      <span class="badge badge-info">{item.s_Name}</span>
                                   </td>
                               </tr>
                             ))

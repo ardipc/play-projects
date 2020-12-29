@@ -402,7 +402,7 @@ class ProjectDetail extends React.Component{
                                                   {item.m_Name}
                                                 </a>
                                               </td>
-                                              <td>{item.m_Budget}</td>
+                                              <td>{toRupiah(item.m_Budget)}</td>
                                               <td>{item.m_IsDone ? "Done" : "Progress"}</td>
                                               <td class="text-center">
                                                 {

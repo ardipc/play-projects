@@ -7,6 +7,10 @@ import { API_URL } from '../../config/env'
 import moment from 'moment-timezone'
 import { toast } from 'react-toastify'
 
+import { Modal, Button } from 'react-bootstrap';
+
+import Select from 'react-select'
+
 class ProjectsIndex extends React.Component {
 
   state = {
@@ -14,20 +18,153 @@ class ProjectsIndex extends React.Component {
     level: JSON.parse(localStorage.getItem('user')).LevelID,
 
     list: [],
+
+    isProject: false,
+    id: '',
+    nameProject: '',
+    description: '',
+    status: '',
+    client: '',
+    leader: '',
+    start: '',
+    end: '',
+
+    listClient: [],
+    listLeader: [],
+    listStatus: [],
+  }
+
+  saveProject = e => {
+    e.preventDefault();
+
+    if(this.state.id) {
+      let form = {
+        Name: this.state.nameProject,
+        Description: this.state.description,
+        StatusID: this.state.status.value,
+        Client: this.state.client.value,
+        Leader: this.state.leader.value,
+        StartDate: this.state.start,
+        EndDate: this.state.end
+      };
+
+      let url = `${API_URL}/api/project/${this.state.id}`;
+      axios.patch(url, form).then(res => {
+        toast.success(`Project successfully updated`)
+        this.clearForm()
+        this.fetchProjects()
+      })
+    } else {
+
+      let form = {
+        Name: this.state.nameProject,
+        Description: this.state.description,
+        StatusID: this.state.status.value,
+        Client: this.state.client.value,
+        Leader: this.state.leader.value,
+        StartDate: this.state.start,
+        EndDate: this.state.end
+      };
+
+      let url = `${API_URL}/api/project`;
+      axios.post(url, form).then(res => {
+        toast.success(`Project successfully created`)
+        this.clearForm()
+        this.fetchProjects()
+      })
+    }
+  }
+
+  deleteProject = e => {
+    e.preventDefault()
+    let IDProject = e.target.getAttribute('data-id')
+    let url = `${API_URL}/api/project/${IDProject}`
+    axios.delete(url).then(res => {
+      toast.error(`Project deleted`)
+      this.fetchProjects()
+    })
+  }
+
+  selectProject = e => {
+    e.preventDefault()
+    let IDProject = e.target.getAttribute('data-id')
+    let url = `${API_URL}/api/project/${IDProject}`
+    axios.get(url).then(res => {
+
+      let status = this.state.listStatus.filter(item => item.IDLevel === res.data[0].LevelID);
+      let client = this.state.listClient.filter(item => item.value === res.data[0].Client);
+      let leader = this.state.listLeader.filter(item => item.value === res.data[0].Leader);
+
+      console.log(res.data, status, client, leader)
+
+      this.setState({
+        isProject: true,
+        id: res.data[0].IDProject,
+        nameProject: res.data[0].Name,
+        description: res.data[0].Description,
+        status: status[0],
+        client: client[0],
+        leader: leader[0],
+        start: moment(res.data[0].StartDate).format('YYYY-MM-DD'),
+        end: moment(res.data[0].EndDate).format('YYYY-MM-DD')
+      })
+    })
   }
 
   componentDidMount() {
     this.fetchProjects()
+    this.fetchUser()
+    this.fetchStatus()
+  }
+
+  clearForm() {
+    this.setState({
+      isProject: false, id: '', nameProject: '', description: '', status: '', client: '', leader: '', start: '', end: ''
+    })
   }
 
   fetchProjects() {
-    let url = `${API_URL}/api/project?_sort=-IDProject`;
+    let url = `${API_URL}/api/xjoin`;
+      url += `?_join=ul.user_level,_j,u.user,_j,p.project,_j,uu.user,_j,s.project_status`
+      url += `&_on1=(ul.IDLevel,eq,u.LevelID)`
+      url += `&_on2=(u.IDUser,eq,p.Client)`
+      url += `&_on3=(uu.IDUser,eq,p.Leader)`
+      url += `&_on4=(s.IDStatus,eq,p.StatusID)`
+      url += `&_fields=p.IDProject,p.Name,p.Description,p.Leader,p.Client,p.CreateAt,u.Name,p.Leader,uu.Name,p.StartDate,p.EndDate,p.StatusID,s.Name`
+      url += `&_sort=-p.IDProject`;
     axios.get(url).then(res => {
       this.setState({ list: res.data })
     })
   }
 
+  fetchStatus() {
+    let url = `${API_URL}/api/project_status`;
+    axios.get(url).then(res => {
+      let data = [];
+      res.data.map(item => {
+        data.push({ value: item.IDStatus, label: item.Name });
+      })
+      this.setState({ listStatus: data })
+    })
+  }
+
+  fetchUser() {
+    let url = `${API_URL}/api/user`;
+    axios.get(url).then(res => {
+      let client = [];
+      res.data.filter(item => item.LevelID === 3).map(item => { client.push({ value: item.IDUser, label: item.Name }) });
+
+      let leader = [];
+      res.data.filter(item => item.LevelID === 2).map(item => { leader.push({ value: item.IDUser, label: item.Name }) });
+
+      this.setState({ listClient: client, listLeader: leader })
+    })
+  }
+
   render() {
+
+    console.log('state: ', this.state)
+
     return (
       <div class="content-wrapper">
 
@@ -57,7 +194,7 @@ class ProjectsIndex extends React.Component {
                     <h3 class="card-title">Projects</h3>
 
                     <div class="card-tools">
-                      <button type="button" class="btn btn-tool border">
+                      <button onClick={() => this.setState({ isProject: true })} type="button" class="btn btn-tool border">
                         <i class="fas fa-plus"></i> Create Project
                       </button>
                     </div>
@@ -70,8 +207,6 @@ class ProjectsIndex extends React.Component {
                                 <th>Project Name</th>
                                 <th>Client</th>
                                 <th>Leader</th>
-                                <th>Team Members</th>
-                                <th>Project Progress</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Action</th>
                             </tr>
@@ -80,67 +215,36 @@ class ProjectsIndex extends React.Component {
                           {
                             this.state.list.map(item => (
                               <tr>
-                                  <td>#{item.IDProject}</td>
+                                  <td>#{item.p_IDProject}</td>
                                   <td>
-                                    <Link to={`/projects-detail/${item.IDProject}`}>
-                                      {item.Name}
+                                    <Link to={`/projects-detail/${item.p_IDProject}`}>
+                                      {item.p_Name}
                                     </Link>
                                     <br/>
                                     <small>
-                                      Created {moment(item.CreatedAt).format('DD.MM.YYYY HH:mm')}
+                                      Created {moment(item.p_CreateAt).format('DD.MM.YYYY HH:mm')}
                                     </small>
                                   </td>
                                   <td>
                                       <ul class="list-inline">
                                           <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar2.png" />
+                                              <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
                                           </li>
                                       </ul>
                                   </td>
                                   <td>
                                       <ul class="list-inline">
                                           <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar.png" />
+                                              <img title={item.uu_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.uu_Name}`} />
                                           </li>
                                       </ul>
-                                  </td>
-                                  <td>
-                                      <ul class="list-inline">
-                                          <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar2.png" />
-                                          </li>
-                                          <li class="list-inline-item">
-                                              <img alt="Avatar" class="table-avatar" src="/dist/img/avatar.png" />
-                                          </li>
-                                      </ul>
-                                  </td>
-                                  <td class="project_progress">
-                                      <div class="progress progress-sm">
-                                          <div class="progress-bar bg-green" role="progressbar" aria-valuenow="57" aria-valuemin="0" aria-valuemax="100" style={{width: '57%'}}>
-                                          </div>
-                                      </div>
-                                      <small>
-                                          57% Complete
-                                      </small>
                                   </td>
                                   <td class="project-state">
-                                      <span class="badge badge-info">On Progress</span>
+                                      <span class="badge badge-info">{item.s_Name}</span>
                                   </td>
                                   <td class="project-actions text-center">
-                                      <a class="btn btn-primary btn-sm mr-2" href="#">
-                                          <i class="fas fa-folder"></i>
-                                          &nbsp;View
-                                      </a>
-                                      <a class="btn btn-info btn-sm mr-2" href="#">
-                                          <i class="fas fa-pencil-alt">
-                                          </i>
-                                          &nbsp;Edit
-                                      </a>
-                                      <a class="btn btn-danger btn-sm mr-2" href="#">
-                                          <i class="fas fa-trash">
-                                          </i>
-                                          &nbsp;Delete
-                                      </a>
+                                    <i onClick={this.selectProject} data-id={item.p_IDProject} style={{cursor: 'pointer'}} class="fas fa-pencil-alt mr-2"></i>
+                                    <i onClick={this.deleteProject} data-id={item.p_IDProject} style={{cursor: 'pointer'}} class="fas fa-trash"></i>
                                   </td>
                               </tr>
                             ))
@@ -150,8 +254,59 @@ class ProjectsIndex extends React.Component {
                     </table>
                   </div>
                 </div>
-
               </div>
+
+              <Modal dialogClassName="modal-lg" show={this.state.isProject} onHide={() => this.clearForm()} animation={false}>
+                <div class="card" style={{marginBottom: 0}}>
+                  <div class="card-body login-card-body">
+
+                    <form onSubmit={this.saveProject}>
+
+                      <div class="form-group mb-3">
+                        <label>Name</label>
+                        <input onChange={e => this.setState({ nameProject: e.target.value })} value={this.state.nameProject} type="text" class="form-control" placeholder="Name" />
+                      </div>
+
+                      <div class="form-group mb-3">
+                        <label>Description</label>
+                        <textarea onChange={e => this.setState({ description: e.target.value })} value={this.state.description} rows="4" class="form-control" placeholder="Description" />
+                      </div>
+
+                      <div class="form-group mb-3 row">
+                        <div class="col-sm-4">
+                          <label>Start Date</label>
+                          <input onChange={e => this.setState({ start: e.target.value })} value={this.state.start} type="date" class="form-control" placeholder="Date" />
+                        </div>
+                        <div class="col-sm-4">
+                          <label>End Date</label>
+                          <input onChange={e => this.setState({ end: e.target.value })} value={this.state.end} type="date" class="form-control" placeholder="Date" />
+                        </div>
+                        <div class="col-sm-4">
+                          <label>Status</label>
+                          <Select onChange={e => this.setState({ status: e })} value={this.state.status} options={this.state.listStatus} />
+                        </div>
+                      </div>
+
+                      <div class="form-group mb-3 row">
+                        <div class="col-sm-6">
+                          <label>Client</label>
+                          <Select onChange={e => this.setState({ client: e })} value={this.state.client} options={this.state.listClient} />
+                        </div>
+                        <div class="col-sm-6">
+                          <label>Leader</label>
+                          <Select onChange={e => this.setState({ leader: e })} value={this.state.leader} options={this.state.listLeader} />
+                        </div>
+                      </div>
+
+                      <div class="form-group" style={{marginBottom: 0}}>
+                        <button type="submit" class="btn btn-primary float-right">Save</button>
+                        <button onClick={() => this.clearForm()} type="button" class="btn btn-default">Close</button>
+                      </div>
+                    </form>
+
+                  </div>
+                </div>
+              </Modal>
 
             </div>
           </div>
