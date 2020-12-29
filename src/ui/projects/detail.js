@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 import axios from 'axios'
 import { API_URL } from '../../config/env'
-import { toRupiah } from '../../helper/format'
+import { toRupiah, toNumber } from '../../helper/format'
 
 import { Modal, Button } from 'react-bootstrap';
 

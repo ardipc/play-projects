@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -16,6 +16,7 @@ import ProjectDetail from '../ui/projects/detail';
 import ProjectEdit from '../ui/projects/edit';
 
 import UserLevel from '../ui/master/level';
+import Status from '../ui/master/status';
 
 import Clients from '../ui/clients/index';
 
@@ -45,6 +46,7 @@ class Private extends React.Component {
           <Route path="/projects-edit"><ProjectEdit /></Route>
 
           <Route path="/user-level"><UserLevel /></Route>
+          <Route path="/project-status"><Status /></Route>
 
           <Route path="/clients"><Clients /></Route>
           <Route path="/talents"><Talents /></Route>
