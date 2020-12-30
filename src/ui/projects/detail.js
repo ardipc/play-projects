@@ -36,7 +36,12 @@ class ProjectDetail extends React.Component{
         task: [],
         isTask: false,
         idTask: '',
-        nameTask: ''
+        nameTask: '',
+
+        isCandidate: false,
+        listCandidate: [],
+        idModul: '',
+        nameModul: ''
     }
 
     setToDone = e => {
@@ -66,11 +71,15 @@ class ProjectDetail extends React.Component{
 
       if(this.state.id) {
         // action update patch
+
         let form = {
           Name: this.state.name,
-          Budget: this.state.budget,
-          Assign: this.state.assign.value
+          Budget: this.state.budget
         };
+
+        if(this.state.assign) {
+          form.Assign = this.state.assign.value
+        }
 
         let url = `${API_URL}/api/project_modul/${this.state.id}`;
         axios.patch(url, form).then(res => {
@@ -202,8 +211,56 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    showCandidate = e => {
+      e.preventDefault()
+      let idModul = e.target.getAttribute('data-id')
+      let nameModul = e.target.getAttribute('data-name')
+
+      // let url = `${API_URL}/api/project_modul_candidate?_where=(ModuleID,eq,${idModul})`
+      let url = `${API_URL}/api/xjoin`;
+        url += `?_join=pmc.project_modul_candidate,_j,u.user`
+        url += `&_on1=(pmc.UserID,eq,u.IDUser)`
+        url += `&_fields=pmc.IDCandidate,pmc.ModuleID,pmc.UserID,u.Name,u.Email,pmc.CreatedAt,pmc.Status`
+        url += `&_where=(pmc.ModuleID,eq,${idModul})`;
+
+      axios.get(url).then(res => {
+        this.setState({ isCandidate: true, idModul: idModul, nameModul: nameModul, listCandidate: res.data })
+      })
+    }
+
+    updateAssignModule = e => {
+      e.preventDefault()
+      let id = e.target.getAttribute('data-id')
+      let talent = e.target.getAttribute('data-talent')
+      let idModul = this.state.idModul
+
+      let form = {
+        Assign: talent
+      };
+      let url = `${API_URL}/api/project_modul/${idModul}`
+      axios.patch(url, form).then(res => {
+        toast.success(`Assign talent to module successfully.`)
+        this.fetchModule(this.state.projectId)
+      })
+    }
+
+    removeAssignModule = e => {
+      e.preventDefault()
+      let id = e.target.getAttribute('data-id')
+      let form = { Assign: null };
+      let url = `${API_URL}/api/project_modul/${id}`;
+      axios.patch(url, form).then(res => {
+        toast.info(`Remove all talent from module.`)
+        this.fetchModule(this.state.projectId)
+      })
+    }
+
     clearModule() {
       this.setState({ name: '', budget: '', assign: '' })
+    }
+
+    closeCandidate() {
+      this.setState({ isCandidate: false, idModul: '', nameModul: '', listCandidate: [] })
     }
 
     closeModule() {
@@ -403,21 +460,8 @@ class ProjectDetail extends React.Component{
                                                 </a>
                                               </td>
                                               <td>{toRupiah(item.m_Budget)}</td>
-                                              <td>{item.m_IsDone ? "Done" : "Progress"}</td>
-                                              <td class="text-center">
-                                                {
-                                                  item.m_Assign &&
-                                                  <ul class="list-inline">
-                                                    <li class="list-inline-item">
-                                                      <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
-                                                    </li>
-                                                  </ul>
-                                                }
+                                              <td>{item.m_IsDone ? <span class="badge badge-success">Done</span> : <span class="badge badge-danger">Undone</span>}</td>
 
-                                                {
-                                                  !item.m_Assign && <span>-</span>
-                                                }
-                                              </td>
                                               <td>
                                                 {
                                                   item.m_IsDone === 0 &&
@@ -433,7 +477,25 @@ class ProjectDetail extends React.Component{
                                                   </a>
                                                 }
                                               </td>
+                                              <td class="text-center">
+                                                {
+                                                  item.m_Assign &&
+                                                  <ul class="list-inline">
+                                                    <li class="list-inline-item">
+                                                      <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                                    </li>
+                                                  </ul>
+                                                }
+
+                                                {
+                                                  !item.m_Assign &&
+                                                  <a title="See all candidate" onClick={this.showCandidate} data-name={item.m_Name} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
+                                                    <i data-id={item.m_IDModule} data-name={item.m_Name} class="fa fa-users"></i>
+                                                  </a>
+                                                }
+                                              </td>
                                               <td>
+                                                <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-cogs mr-2"></i>
                                                 <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
                                                 <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
                                               </td>
@@ -512,12 +574,50 @@ class ProjectDetail extends React.Component{
                                       </div>
                                     </Modal>
 
+                                    <Modal show={this.state.isCandidate} onHide={() => this.closeCandidate()} animation={false}>
+                                      <div class="card" style={{marginBottom: 0}}>
+                                        <div class="card-body login-card-body">
+                                          <h4>Candidate on <b>{this.state.nameModul}</b></h4>
+
+                                          <table class="table projects mt-3">
+                                            {
+                                              this.state.listCandidate.map(item => (
+                                                <tr key={item.pmc_IDCandidate}>
+                                                  <td width="20px">
+                                                    #{item.pmc_IDCandidate}
+                                                  </td>
+                                                  <td width="20px">
+                                                    <ul class="list-inline">
+                                                        <li class="list-inline-item">
+                                                            <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                                        </li>
+                                                    </ul>
+                                                  </td>
+                                                  <td>{item.u_Name}</td>
+                                                  <td class="text-right" width="30px">
+                                                    <i onClick={this.updateAssignModule} data-talent={item.pmc_UserID} data-id={item.pmc_IDCandidate} style={{cursor: 'pointer'}} class="fa fa-check"></i>
+                                                  </td>
+                                                </tr>
+                                              ))
+                                            }
+                                          </table>
+
+                                        </div>
+                                      </div>
+                                    </Modal>
+
                                 </div>
                             </div>
 
                             <div class="row">
                               <div class="col-12">
                                 <h4>Activity</h4>
+
+                                <span>Under Construction</span>
+
+                                {
+                                  /**
+
                                 <div class="post">
                                   <div class="user-block">
                                     <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" />
@@ -567,6 +667,10 @@ class ProjectDetail extends React.Component{
                                     <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 1 v1</a>
                                   </p>
                                 </div>
+
+                                  */
+                                }
+
                               </div>
                             </div>
                           </div>

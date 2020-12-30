@@ -223,7 +223,7 @@ class LayoutNav extends React.Component {
                       </div>
                     </div>
                   </div>
-                  
+
 
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" />
@@ -233,7 +233,7 @@ class LayoutNav extends React.Component {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ pass: e.target.value })} value={this.state.pass} type="password" class="form-control" placeholder="Password" />
                     <div class="input-group-append">
@@ -272,9 +272,14 @@ class LayoutNav extends React.Component {
 
             {
               this.state.checkLogin &&
+              <>
+              <li class="nav-item">
+                <a href="#" class="nav-link">{JSON.parse(localStorage.getItem('user')).LevelID === 1 ? 'Admin' : JSON.parse(localStorage.getItem('user')).LevelID === 2 ? 'Talents' : 'Client'}</a>
+              </li>
               <li class="nav-item">
                 <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
               </li>
+              </>
             }
 
           </ul>

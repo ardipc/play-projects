@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 import axios from 'axios'
 import { API_URL } from '../../config/env'
+import { toRupiah } from '../../helper/format'
+import { Modal, Button } from 'react-bootstrap';
 
 import moment from 'moment-timezone'
 import { toast } from 'react-toastify'
@@ -10,20 +12,61 @@ import { toast } from 'react-toastify'
 class HomeIndex extends React.Component {
 
   state = {
+    userId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).IDUser : '',
     name: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).Name : '',
     level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
 
     list: [],
 
+    modul: [],
+
     module: 0,
     client: 0,
-    talent: 0
+    talent: 0,
+
+    isTask: false,
+    idModul: '',
+    nameModul: '',
+    listTask: [],
+  }
+
+  selectTask = e => {
+    e.preventDefault()
+    let id = e.target.getAttribute('data-id')
+    let name = e.target.getAttribute('data-name')
+    this.setState({ idModul: id, nameModul: name, isTask: true })
+    this.fetchTaskByModule(id)
+  }
+
+  letMeDoIt = e => {
+    e.preventDefault()
+    let userId = e.target.getAttribute('data-user')
+    let modulId = e.target.getAttribute('data-modul')
+
+    let cek = `${API_URL}/api/project_modul_candidate?_where=(UserID,eq,${userId})~and(ModuleID,eq,${modulId})`;
+    axios.get(cek).then(res => {
+      if(res.data.length === 1) {
+        toast.info(`Ehh, Kamu sudah pernah ambil modul ini lohh. Coba tunggu informasi dari Administrator yaa...`)
+      } else {
+        let form = {
+          UserID: userId,
+          ModuleID: modulId
+        };
+        let url = `${API_URL}/api/project_modul_candidate`;
+        axios.post(url, form).then(res => {
+          toast.success(`Tunggu konfirmasi Administrator untuk memilih kamu yaa.`)
+          this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })
+        })
+      }
+    })
+
   }
 
   componentDidMount() {
     this.fetchProjects()
     this.fetchUser()
     this.fetchModule()
+    this.fetchCountModule()
   }
 
   fetchProjects() {
@@ -50,13 +93,39 @@ class HomeIndex extends React.Component {
   }
 
   fetchModule() {
+    let form = {
+      query: `SELECT pm.IDModule, pm.Name AS pm_Name, pm.Budget, pm.IsDone, pm.Assign, p.IDProject, p.StartDate, p.EndDate, p.Name AS p_Name, p.Client, u.Name AS u_Name, count(pt.IDTask) AS t_Count
+        FROM project_modul pm JOIN project p ON pm.ProjectID = p.IDProject JOIN user u ON p.Client = u.IDUser LEFT JOIN project_task pt ON pm.IDModule = pt.ModuleID
+        WHERE pm.Assign IS null
+        GROUP BY pm.IDModule
+        ORDER BY pm.IDModule DESC
+        LIMIT 0, 5`,
+      params: []
+    };
+    let url = `${API_URL}/dynamic`;
+    axios.post(url, form).then(res => {
+      this.setState({ modul: res.data })
+    })
+  }
+
+  fetchCountModule() {
     let url = `${API_URL}/api/project_modul`;
     axios.get(url).then(res => {
       this.setState({ module: res.data.length })
     })
   }
 
+  fetchTaskByModule(moduleId) {
+    let url = `${API_URL}/api/project_task?_where=(ModuleID,eq,${moduleId})`;
+    axios.get(url).then(res => {
+      this.setState({ listTask: res.data })
+    })
+  }
+
   render() {
+
+    console.log('state: ', this.state)
+
     return (
       <div class="content-wrapper">
 
@@ -143,10 +212,100 @@ class HomeIndex extends React.Component {
                 </div>
               </div>
 
-              <div class="col-sm-12">
+              <div class="col-sm-6">
                 <div class="card">
                   <div class="card-header">
-                    <h3 class="card-title">Projects</h3>
+                    <h3 class="card-title">Newest Module</h3>
+
+                    <div class="card-tools">
+                      {
+                        /**
+                        <button type="button" class="btn btn-tool border">
+                        <i class="fas fa-plus"></i> Create Project
+                        </button>
+                        */
+                      }
+                    </div>
+                  </div>
+                  <div class="card-body p-0">
+
+                    <table class="table table-striped projects">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Budget</th>
+                                <th>Client</th>
+                                <th>Task</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            this.state.modul.map(item => (
+                              <tr>
+                                  <td>#{item.IDModule}</td>
+                                  <td>
+                                    <a href="#" onClick={this.selectTask} data-id={item.IDModule} data-name={item.pm_Name}>
+                                      {item.pm_Name}
+                                    </a>
+                                    <br/>
+                                    <small>
+                                      Project on <Link to={`/projects-detail/${item.IDProject}`}>{item.p_Name}</Link>
+                                    </small>
+                                  </td>
+                                  <td>
+                                      {toRupiah(item.Budget)}
+                                  </td>
+                                  <td>
+                                      <ul class="list-inline">
+                                          <li class="list-inline-item">
+                                              <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                          </li>
+                                      </ul>
+                                  </td>
+                                  <td class="project-state">
+                                      <span class="badge badge-info">{item.t_Count}</span>
+                                  </td>
+                              </tr>
+                            ))
+                          }
+
+                        </tbody>
+                    </table>
+
+                    <Modal show={this.state.isTask} onHide={() => this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })} animation={false}>
+                      <div class="card" style={{marginBottom: 0}}>
+                        <div class="card-body login-card-body">
+                          <h4>Task on <b>{this.state.nameModul}</b></h4>
+
+                          <table class="table mt-3">
+                            {
+                              this.state.listTask.map(item => (
+                                <tr key={item.IDTask}>
+                                  <td width="20px">
+                                    #{item.IDTask}
+                                  </td>
+                                  <td style={item.IsDone === 1 ? {textDecoration: 'line-through'} : {}}>{item.Name}</td>
+                                </tr>
+                              ))
+                            }
+                          </table>
+
+                          <button onClick={this.letMeDoIt} data-user={this.state.userId} data-modul={this.state.idModul} class="btn btn-sm btn-primary mt-3">Let me do it</button>
+
+                        </div>
+                      </div>
+                    </Modal>
+
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="col-sm-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Newest Projects</h3>
 
                     <div class="card-tools">
                       {
@@ -207,6 +366,7 @@ class HomeIndex extends React.Component {
 
                         </tbody>
                     </table>
+
                   </div>
                 </div>
 

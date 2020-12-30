@@ -132,6 +132,7 @@ class ProjectsIndex extends React.Component {
       url += `&_on4=(s.IDStatus,eq,p.StatusID)`
       url += `&_fields=p.IDProject,p.Name,p.Description,p.Leader,p.Client,p.CreateAt,u.Name,p.Leader,uu.Name,p.StartDate,p.EndDate,p.StatusID,s.Name`
       url += `&_sort=-p.IDProject`;
+      // url += `&_where=(p.Client,eq,9)`;
     axios.get(url).then(res => {
       this.setState({ list: res.data })
     })
