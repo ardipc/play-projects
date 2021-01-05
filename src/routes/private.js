@@ -23,6 +23,8 @@ import Clients from '../ui/clients/index';
 import Talents from '../ui/talents/index';
 
 import Admins from '../ui/admins/index';
+import Profil from '../ui/profil/index';
+import Jobs from '../ui/jobs/index';
 
 import NotFound from '../ui/notfound/index';
 
@@ -53,6 +55,9 @@ class Private extends React.Component {
           <Route path="/clients"><Clients /></Route>
           <Route path="/talents"><Talents /></Route>
           <Route path="/admins"><Admins /></Route>
+
+          <Route path="/profil"><Profil /></Route>
+          <Route path="/jobs"><Jobs /></Route>
 
           {/** CLIENT */}
 

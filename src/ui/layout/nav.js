@@ -9,6 +9,7 @@ class LayoutNav extends React.Component {
 
   state = {
     checkLogin: localStorage.getItem('isLogin'),
+    level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
     isLogin: false,
     isRegister: false,
     isForgot: false,
@@ -116,9 +117,20 @@ class LayoutNav extends React.Component {
               <li class="nav-item">
                 <Link to="/" class="nav-link">Beranda</Link>
               </li>
-              <li class="nav-item">
-                <Link to="/projects" class="nav-link">Project</Link>
-              </li>
+
+              {
+                this.state.checkLogin && (this.state.level === 1 || this.state.level === 3) &&
+                <li class="nav-item">
+                  <Link to="/projects" class="nav-link">Project</Link>
+                </li>
+              }
+
+              {
+                this.state.checkLogin && this.state.level === 2 &&
+                <li class="nav-item">
+                  <Link to="/jobs" class="nav-link">Jobs</Link>
+                </li>
+              }
 
             </ul>
 
@@ -274,7 +286,7 @@ class LayoutNav extends React.Component {
               this.state.checkLogin &&
               <>
               <li class="nav-item">
-                <a href="#" class="nav-link">{JSON.parse(localStorage.getItem('user')).LevelID === 1 ? 'Admin' : JSON.parse(localStorage.getItem('user')).LevelID === 2 ? 'Talents' : 'Client'}</a>
+                <Link to="/profil" class="nav-link">Profil</Link>
               </li>
               <li class="nav-item">
                 <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
