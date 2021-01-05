@@ -41,12 +41,18 @@ class ProjectsIndex extends React.Component {
       let form = {
         Name: this.state.nameProject,
         Description: this.state.description,
-        StatusID: this.state.status.value,
-        Client: this.state.client.value,
-        Leader: this.state.leader.value,
         StartDate: this.state.start,
-        EndDate: this.state.end
+        EndDate: this.state.end,
+
+        StatusID: this.state.status.value,
+        Client: JSON.parse(localStorage.getItem('user')).IDUser
       };
+
+      if(this.state.level === 1) {
+        form.StatusID = this.state.status.value;
+        form.Client = this.state.client.value;
+        form.Leader = this.state.leader.value;
+      }
 
       let url = `${API_URL}/api/project/${this.state.id}`;
       axios.patch(url, form).then(res => {
@@ -59,12 +65,18 @@ class ProjectsIndex extends React.Component {
       let form = {
         Name: this.state.nameProject,
         Description: this.state.description,
-        StatusID: this.state.status.value,
-        Client: this.state.client.value,
-        Leader: this.state.leader.value,
         StartDate: this.state.start,
-        EndDate: this.state.end
+        EndDate: this.state.end,
+
+        StatusID: 1,
+        Client: JSON.parse(localStorage.getItem('user')).IDUser
       };
+
+      if(this.state.level === 1) {
+        form.StatusID = this.state.status.value;
+        form.Client = this.state.client.value;
+        form.Leader = this.state.leader.value;
+      }
 
       let url = `${API_URL}/api/project`;
       axios.post(url, form).then(res => {
@@ -125,14 +137,17 @@ class ProjectsIndex extends React.Component {
 
   fetchProjects() {
     let url = `${API_URL}/api/xjoin`;
-      url += `?_join=ul.user_level,_j,u.user,_j,p.project,_j,uu.user,_j,s.project_status`
+      url += `?_join=ul.user_level,_j,u.user,_j,p.project,_lj,uu.user,_j,s.project_status`
       url += `&_on1=(ul.IDLevel,eq,u.LevelID)`
       url += `&_on2=(u.IDUser,eq,p.Client)`
       url += `&_on3=(uu.IDUser,eq,p.Leader)`
       url += `&_on4=(s.IDStatus,eq,p.StatusID)`
       url += `&_fields=p.IDProject,p.Name,p.Description,p.Leader,p.Client,p.CreateAt,u.Name,p.Leader,uu.Name,p.StartDate,p.EndDate,p.StatusID,s.Name`
       url += `&_sort=-p.IDProject`;
-      // url += `&_where=(p.Client,eq,9)`;
+
+    if(this.state.level === 3) {
+      url += `&_where=(p.Client,eq,${JSON.parse(localStorage.getItem('user')).IDUser})`;
+    }
     axios.get(url).then(res => {
       this.setState({ list: res.data })
     })
@@ -282,22 +297,30 @@ class ProjectsIndex extends React.Component {
                           <label>End Date</label>
                           <input onChange={e => this.setState({ end: e.target.value })} value={this.state.end} type="date" class="form-control" placeholder="Date" />
                         </div>
-                        <div class="col-sm-4">
-                          <label>Status</label>
-                          <Select onChange={e => this.setState({ status: e })} value={this.state.status} options={this.state.listStatus} />
-                        </div>
+                        {
+                          this.state.level === 1 &&
+                          <div class="col-sm-4">
+                            <label>Status</label>
+                            <Select onChange={e => this.setState({ status: e })} value={this.state.status} options={this.state.listStatus} />
+                          </div>
+                        }
+
                       </div>
 
-                      <div class="form-group mb-3 row">
-                        <div class="col-sm-6">
-                          <label>Client</label>
-                          <Select onChange={e => this.setState({ client: e })} value={this.state.client} options={this.state.listClient} />
+                      {
+                        this.state.level === 1 &&
+
+                        <div class="form-group mb-3 row">
+                          <div class="col-sm-6">
+                            <label>Client</label>
+                            <Select onChange={e => this.setState({ client: e })} value={this.state.client} options={this.state.listClient} />
+                          </div>
+                          <div class="col-sm-6">
+                            <label>Leader</label>
+                            <Select onChange={e => this.setState({ leader: e })} value={this.state.leader} options={this.state.listLeader} />
+                          </div>
                         </div>
-                        <div class="col-sm-6">
-                          <label>Leader</label>
-                          <Select onChange={e => this.setState({ leader: e })} value={this.state.leader} options={this.state.listLeader} />
-                        </div>
-                      </div>
+                      }
 
                       <div class="form-group" style={{marginBottom: 0}}>
                         <button type="submit" class="btn btn-primary float-right">Save</button>

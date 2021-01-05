@@ -250,7 +250,7 @@ class ProjectDetail extends React.Component{
       let form = { Assign: null };
       let url = `${API_URL}/api/project_modul/${id}`;
       axios.patch(url, form).then(res => {
-        toast.info(`Remove all talent from module.`)
+        toast.info(`Remove talent from module.`)
         this.fetchModule(this.state.projectId)
       })
     }
@@ -284,7 +284,7 @@ class ProjectDetail extends React.Component{
 
     fetchProjectsDetail(projectId) {
       let url = `${API_URL}/api/xjoin`;
-        url += `?_join=ul.user_level,_j,u.user,_j,p.project,_j,uu.user,_j,s.project_status`
+        url += `?_join=ul.user_level,_j,u.user,_j,p.project,_lj,uu.user,_j,s.project_status`
         url += `&_on1=(ul.IDLevel,eq,u.LevelID)`
         url += `&_on2=(u.IDUser,eq,p.Client)`
         url += `&_on3=(uu.IDUser,eq,p.Leader)`
@@ -581,6 +581,9 @@ class ProjectDetail extends React.Component{
 
                                           <table class="table projects mt-3">
                                             {
+                                              this.state.listCandidate.length === 0 && <span>No candidates yet</span>
+                                            }
+                                            {
                                               this.state.listCandidate.map(item => (
                                                 <tr key={item.pmc_IDCandidate}>
                                                   <td width="20px">
@@ -688,7 +691,7 @@ class ProjectDetail extends React.Component{
                                 <b class="d-block">{this.state.project.u_Name}</b>
                               </p>
                               <p class="text-sm">Leader
-                                <b class="d-block">{this.state.project.uu_Name}</b>
+                                <b class="d-block">{this.state.project.uu_Name ? this.state.project.uu_Name : 'Not set' }</b>
                               </p>
                             </div>
 
