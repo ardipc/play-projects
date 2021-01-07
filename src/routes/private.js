@@ -14,8 +14,10 @@ import ProjectsIndex from '../ui/projects/index';
 import ProjectsBuat from '../ui/projects/buat';
 import ProjectDetail from '../ui/projects/detail';
 import ProjectEdit from '../ui/projects/edit';
+import DataProject from '../ui/dataProject/data';
 
 import UserLevel from '../ui/master/level';
+import Status from '../ui/status/index';
 
 import Clients from '../ui/clients/index';
 
@@ -43,8 +45,11 @@ class Private extends React.Component {
           <Route path="/projects-detail/:projectId" component={ProjectDetail} />
           <Route path="/projects-buat"><ProjectsBuat /></Route>
           <Route path="/projects-edit"><ProjectEdit /></Route>
+          <Route path="/data-project"><DataProject /></Route>
 
           <Route path="/user-level"><UserLevel /></Route>
+          <Route path="/project-status"><Status /></Route>
+
 
           <Route path="/clients"><Clients /></Route>
           <Route path="/talents"><Talents /></Route>
@@ -53,6 +58,7 @@ class Private extends React.Component {
 
           <Route><NotFound /></Route>
         </Switch>
+        
 
         <LayoutFoot />
       </Router>
