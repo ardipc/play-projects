@@ -93,6 +93,28 @@ class LayoutNav extends React.Component {
     })
   }
 
+  daftarTalent = e => {
+    e.preventDefault();
+    let { name, email, pass } = this.state;
+
+    let form = {
+      Name: name,
+      Email: email,
+      Password: pass,
+      LevelID: '2'
+    };
+
+    let url = `${API_URL}/api/user`;
+    axios.post(url, form).then( res => {
+      let data = res.data;
+      if(data.hasOwnProperty('insertId')) {
+        this.setState({ isLogin: true, isRegister: false, email: '', pass:''})
+      } else {
+        this.setState({ message: 'Something wrong.'})
+      }
+    })
+  }
+
   render() {
 
     console.log('state: ', this.state);
@@ -255,8 +277,11 @@ class LayoutNav extends React.Component {
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-12 mt-2">
-                      <button onClick={this.daftarSistem} type="button" class="btn btn-success btn-block">Register</button>
+                    <div class="col-sm-6   mt-2">
+                      <button onClick={this.daftarSistem} type="button" class="btn btn-success btn-block">Register Client</button>
+                    </div>
+                    <div class="col-sm-6 mt-2">
+                      <button onClick={this.daftarTalent} type="button"  class="btn btn-primary btn-block">Register Talent</button>
                     </div>
                   </div>
                 </form>
@@ -304,3 +329,7 @@ class LayoutNav extends React.Component {
 
 
 export default LayoutNav;
+
+
+//kok ngga berubah kak, wkwkwkwkk
+// mic e ga kenek ya ?
