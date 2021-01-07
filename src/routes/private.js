@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -18,12 +18,15 @@ import DataProject from '../ui/dataProject/data';
 
 import UserLevel from '../ui/master/level';
 import Status from '../ui/status/index';
+// import Status from '../ui/master/status';
 
 import Clients from '../ui/clients/index';
 
 import Talents from '../ui/talents/index';
 
 import Admins from '../ui/admins/index';
+import Profil from '../ui/profil/index';
+import Jobs from '../ui/jobs/index';
 
 import NotFound from '../ui/notfound/index';
 
@@ -41,9 +44,11 @@ class Private extends React.Component {
 
         <Switch>
           <Route path="/" exact><HomeIndex /></Route>
-          <Route path="/projects"><ProjectsIndex /></Route>
+
+          {/** ADMIN */}
+          <Route path="/projects" component={ProjectsIndex} />
           <Route path="/projects-detail/:projectId" component={ProjectDetail} />
-          <Route path="/projects-buat"><ProjectsBuat /></Route>
+          <Route path="/projects-buat" component={ProjectsBuat} />
           <Route path="/projects-edit"><ProjectEdit /></Route>
           <Route path="/data-project"><DataProject /></Route>
 
@@ -55,6 +60,12 @@ class Private extends React.Component {
           <Route path="/talents"><Talents /></Route>
           <Route path="/admins"><Admins /></Route>
 
+          <Route path="/profil"><Profil /></Route>
+          <Route path="/jobs"><Jobs /></Route>
+
+          {/** CLIENT */}
+
+          {/** TALENT */}
 
           <Route><NotFound /></Route>
         </Switch>

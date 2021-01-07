@@ -9,6 +9,7 @@ class LayoutNav extends React.Component {
 
   state = {
     checkLogin: localStorage.getItem('isLogin'),
+    level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
     isLogin: false,
     isRegister: false,
     isForgot: false,
@@ -106,7 +107,7 @@ class LayoutNav extends React.Component {
     let url = `${API_URL}/api/user`;
     axios.post(url, form).then( res => {
       let data = res.data;
-      if(data.hasOwnProperty('inserId')) {
+      if(data.hasOwnProperty('insertId')) {
         this.setState({ isLogin: true, isRegister: false, email: '', pass:''})
       } else {
         this.setState({ message: 'Something wrong.'})
@@ -138,9 +139,20 @@ class LayoutNav extends React.Component {
               <li class="nav-item">
                 <Link to="/" class="nav-link">Beranda</Link>
               </li>
-              <li class="nav-item">
-                <Link to="/projects" class="nav-link">Project</Link>
-              </li>
+
+              {
+                this.state.checkLogin && (this.state.level === 1 || this.state.level === 3) &&
+                <li class="nav-item">
+                  <Link to="/projects" class="nav-link">Project</Link>
+                </li>
+              }
+
+              {
+                this.state.checkLogin && this.state.level === 2 &&
+                <li class="nav-item">
+                  <Link to="/jobs" class="nav-link">Jobs</Link>
+                </li>
+              }
 
             </ul>
 
@@ -245,7 +257,7 @@ class LayoutNav extends React.Component {
                       </div>
                     </div>
                   </div>
-                  
+
 
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" />
@@ -255,7 +267,7 @@ class LayoutNav extends React.Component {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div class="input-group mb-3">
                     <input onChange={e => this.setState({ pass: e.target.value })} value={this.state.pass} type="password" class="form-control" placeholder="Password" />
                     <div class="input-group-append">
@@ -265,11 +277,11 @@ class LayoutNav extends React.Component {
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-sm-6 mt-2">
-                      <button onClick={this.daftarSistem} type="button" class="btn btn-success btn-block">Register</button>
+                    <div class="col-sm-6   mt-2">
+                      <button onClick={this.daftarSistem} type="button" class="btn btn-success btn-block">Register Client</button>
                     </div>
                     <div class="col-sm-6 mt-2">
-                      <button onClick={this.daftarTalent} type="button"  class="btn btn-primary btn block">Register Talents</button>
+                      <button onClick={this.daftarTalent} type="button"  class="btn btn-primary btn-block">Register Talent</button>
                     </div>
                   </div>
                 </form>
@@ -297,9 +309,14 @@ class LayoutNav extends React.Component {
 
             {
               this.state.checkLogin &&
+              <>
+              <li class="nav-item">
+                <Link to="/profil" class="nav-link">Profil</Link>
+              </li>
               <li class="nav-item">
                 <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
               </li>
+              </>
             }
 
           </ul>
