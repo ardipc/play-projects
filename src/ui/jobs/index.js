@@ -22,17 +22,99 @@ class HomeIndex extends React.Component {
     modulDone: [],
 
     isTask: false,
+    idProject: '',
     idModul: '',
     nameModul: '',
     listTask: [],
+
+    files: [],
+    isFiles: false,
+    idFile: '',
+    fileName: '',
+    tempFile: Math.random().toString(36),
+
+    convers: [],
+    komentar: '',
+  }
+
+  uploadFile = e => {
+    e.preventDefault()
+    let form = new FormData();
+    form.append('file', this.state.fileName[0]);
+
+    let url = `${API_URL}/upload`;
+    axios.post(url, form).then(res => {
+
+      let data = res.data;
+      let split = data.split('\\');
+
+      let getFile = split[3];
+      let form = { FileName: getFile, ProjectID: this.state.idProject };
+      let url = `${API_URL}/api/project_files`;
+      axios.post(url, form).then(res => {
+        toast.success(`File has been uploaded.`);
+        this.fetchFiles(this.state.idProject);
+        this.clearFile();
+      })
+    })
+  }
+
+  deleteFile = e => {
+    e.preventDefault()
+    let IDFiles = e.target.getAttribute('data-id');
+    let url = `${API_URL}/api/project_files/${IDFiles}`;
+    axios.delete(url).then(res => {
+      toast.error(`File deleted.`)
+      this.fetchFiles(this.state.idProject);
+    })
+  }
+
+  clearFile() {
+    this.setState({ idFile: '', fileName: '', tempFile: Math.random().toString(36) })
+  }
+
+  fetchFiles(projectId) {
+    let url = `${API_URL}/api/project/${projectId}/project_files`;
+    axios.get(url).then(res => {
+      let data = [];
+      res.data.map(item => {
+        let fileName = item.FileName.split('/');
+        let splitFormat = fileName[fileName.length-1].split('.');
+        let getFormat = splitFormat[splitFormat.length-1] === 'pdf' ? 'file-pdf'
+          : ['png','jpg','jpeg'].includes(splitFormat[splitFormat.length-1]) ? 'image'
+          : ['doc','docx'].includes(splitFormat[splitFormat.length-1]) ? 'file-word'
+          : 'file';
+        data.push({IDFiles: item.IDFiles, FileName: fileName[fileName.length-1], Url: item.FileName, Icon: getFormat })
+      })
+      this.setState({ files: data })
+    })
   }
 
   selectTask = e => {
     e.preventDefault()
     let id = e.target.getAttribute('data-id')
     let name = e.target.getAttribute('data-name')
-    this.setState({ idModul: id, nameModul: name, isTask: true })
+    let project = e.target.getAttribute('data-project')
+    this.setState({ idModul: id, nameModul: name, idProject: project, isTask: true })
     this.fetchTaskByModule(id)
+    this.fetchConvers(id)
+    this.fetchFiles(project)
+  }
+
+  sendKomentar = e => {
+    e.preventDefault()
+    let form = {
+      Jenis: 2,
+      TujuanID: this.state.idModul,
+      UserID: this.state.userId,
+      Description: this.state.komentar
+    }
+
+    let url = `${API_URL}/api/project_activity`
+    axios.post(url, form).then(res => {
+      this.setState({ komentar: '' })
+      this.fetchConvers(this.state.idModul)
+    })
   }
 
   setToDone = e => {
@@ -48,8 +130,9 @@ class HomeIndex extends React.Component {
   }
 
   setTaskToDone = e => {
-    e.preventDefault();
-    let IDTask = e.target.getAttribute('data-id');
+    // e.preventDefault();
+    // let IDTask = e.target.getAttribute('data-id');
+    let IDTask = e.target.value;
     let form = { IsDone: 1 };
     let url = `${API_URL}/api/project_task/${IDTask}`;
     axios.patch(url, form).then(res => {
@@ -58,8 +141,9 @@ class HomeIndex extends React.Component {
   }
 
   setTaskToProgress = e => {
-    e.preventDefault();
-    let IDTask = e.target.getAttribute('data-id');
+    // e.preventDefault();
+    // let IDTask = e.target.getAttribute('data-id');
+    let IDTask = e.target.value;
     let form = { IsDone: 0 };
     let url = `${API_URL}/api/project_task/${IDTask}`;
     axios.patch(url, form).then(res => {
@@ -92,6 +176,20 @@ class HomeIndex extends React.Component {
     let url = `${API_URL}/api/project_task?_where=(ModuleID,eq,${moduleId})`;
     axios.get(url).then(res => {
       this.setState({ listTask: res.data })
+    })
+  }
+
+  fetchConvers(id) {
+    let form = {
+      query: `SELECT pa.*, u.Name
+        FROM project_activity pa JOIN user u ON pa.UserID = u.IDUser
+        WHERE pa.Jenis = 2 AND pa.TujuanID = ?
+        ORDER BY IDActivity ASC`,
+      params: [id]
+    }
+    let url = `${API_URL}/dynamic`
+    axios.post(url, form).then(res => {
+      this.setState({ convers: res.data })
     })
   }
 
@@ -156,7 +254,7 @@ class HomeIndex extends React.Component {
                               <tr>
                                   <td>#{item.IDModule}</td>
                                   <td>
-                                    <a href="#" onClick={this.selectTask} data-id={item.IDModule} data-name={item.pm_Name}>
+                                    <a href="#" onClick={this.selectTask} data-id={item.IDModule} data-project={item.IDProject} data-name={item.pm_Name}>
                                       {item.pm_Name}
                                     </a>
                                     <br/>
@@ -188,43 +286,6 @@ class HomeIndex extends React.Component {
 
                         </tbody>
                     </table>
-
-                    <Modal dialogClassName="modal-lg" show={this.state.isTask} onHide={() => this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })} animation={false}>
-                      <div class="card" style={{marginBottom: 0}}>
-                        <div class="card-body login-card-body">
-                          <h4>Task on <b>{this.state.nameModul}</b></h4>
-
-                          {
-                            this.state.listTask.length === 0 && <span>No task available.</span>
-                          }
-
-                          <table class="table mt-3">
-                            {
-                              this.state.listTask.map(item => (
-                                <tr key={item.IDTask}>
-                                  <td width="20px">
-                                    {
-                                      item.IsDone === 0 &&
-                                      <i onClick={this.setTaskToDone} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-check"></i>
-                                    }
-
-                                    {
-                                      item.IsDone === 1 &&
-                                      <i onClick={this.setTaskToProgress} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-history"></i>
-                                    }
-                                  </td>
-                                  <td width="20px">
-                                    #{item.IDTask}
-                                  </td>
-                                  <td style={item.IsDone === 1 ? {textDecoration: 'line-through'} : {}}>{item.Name}</td>
-                                </tr>
-                              ))
-                            }
-                          </table>
-
-                        </div>
-                      </div>
-                    </Modal>
 
                   </div>
                 </div>
@@ -263,7 +324,7 @@ class HomeIndex extends React.Component {
                               <tr>
                                   <td>#{item.IDModule}</td>
                                   <td>
-                                    <a href="#" onClick={this.selectTask} data-id={item.IDModule} data-name={item.pm_Name}>
+                                    <a href="#" onClick={this.selectTask} data-project={item.IDProject} data-id={item.IDModule} data-name={item.pm_Name}>
                                       {item.pm_Name}
                                     </a>
                                     <br/>
@@ -291,10 +352,120 @@ class HomeIndex extends React.Component {
                         </tbody>
                     </table>
 
-
                   </div>
                 </div>
               </div>
+
+              <Modal dialogClassName="modal-lg" show={this.state.isTask} onHide={() => this.setState({ isTask: false, idModul: '', nameModul: '', idProject: '', listTask: [] })} animation={false}>
+                <div class="card" style={{marginBottom: 0}}>
+                  <div class="card-body login-card-body row">
+
+                    <div class="col-sm-12 mb-3 text-center">
+                      <h4><b>{this.state.nameModul}</b></h4>
+
+                      {
+                        this.state.listTask.length === 0 && <span>No task available.</span>
+                      }
+                    </div>
+
+                    <div class="col-sm-6">
+                      <h6>All tasks</h6>
+                      <ul class="todo-list ui-sortable" data-widget="todo-list">
+
+                        {
+                          this.state.listTask.map((item,i) => (
+                            <li class={item.IsDone ? 'done' : ''}>
+                              <div class="icheck-primary d-inline ml-2">
+                                <input onChange={item.IsDone ? this.setTaskToProgress : this.setTaskToDone} type="checkbox" value={item.IDTask} name={`task${i}`} id={`task${i}`} checked={item.IsDone ? 'checked' : ''} />
+                                <label for="todoCheck2"></label>
+                              </div>
+                              <span class="text ml-3">{item.Name}</span>
+                            </li>
+                          ))
+                        }
+
+                      </ul>
+
+                      <hr/>
+
+                      <h6>Attachment Files</h6>
+                      {
+                        this.state.files.length === 0 && <span>No files available.</span>
+                      }
+                      <ul class="list-unstyled">
+                        {
+                          this.state.files.map(item => (
+                            <li>
+                              <div>
+                                <i class={`far fa-fw fa-${item.Icon}`}></i> {item.FileName}
+
+                                <i style={{cursor: 'pointer'}} onClick={this.deleteFile} data-id={item.IDFiles} class="fa fa-trash float-right"></i>
+                                <a href={`${API_URL}/download?name=${item.Url}`} target="_blank" class="btn-link text-secondary">
+                                  <i class="fa fa-download float-right mr-2"></i>
+                                </a>
+                              </div>
+                            </li>
+                          ))
+                        }
+                      </ul>
+
+                      <button onClick={e => this.setState({ isFiles: true })} class="btn btn-sm btn-primary mr-2">Add file</button>
+
+                      <Modal style={{ marginTop: '30px'}} show={this.state.isFiles} onHide={() => this.setState({ isFiles: false })} animation={false}>
+                        <div class="card" style={{marginBottom: 0}}>
+                          <div class="card-body login-card-body">
+                            <div class="form-group">
+                              <input onChange={e => this.setState({ fileName: e.target.files })} key={this.state.tempFile} type="file" class="form-control" style={{paddingBottom: '37px'}} />
+                            </div>
+                            <div class="form-group" style={{marginBottom: 0}}>
+                              <button onClick={this.uploadFile} type="button" class="btn btn-sm btn-primary float-right">Upload</button>
+                              <button onClick={() => this.setState({ isFiles: false })} type="button" class="btn btn-sm btn-default">Close</button>
+                            </div>
+                          </div>
+                        </div>
+                      </Modal>
+                    </div>
+
+                    <div class="col-sm-6">
+                      <h6>Conversations</h6>
+                      <div class="p-0">
+
+                        <div class="card-footer card-comments">
+
+                          {
+                            this.state.convers.map((item,i) => (
+                              <div class="card-comment">
+                                <img title={item.Name} class="img-circle img-sm" src={`https://ui-avatars.com/api/?name=${item.Name}`} alt="Avatar" />
+
+                                <div class="comment-text">
+                                  <span class="username">
+                                    {item.Name}
+                                    <span class="text-muted float-right">{moment(item.CreateAt).format('DD/MM/YYYY HH:mm')}</span>
+                                  </span>
+                                  {item.Description}
+                                </div>
+                              </div>
+                            ))
+                          }
+
+                        </div>
+
+                        <div class="card-footer">
+                          <form onSubmit={this.sendKomentar}>
+                            <img title={this.state.name} alt="Avatar" class="img-fluid img-circle img-sm" src={`https://ui-avatars.com/api/?name=${this.state.name}`} />
+
+                            <div class="img-push">
+                              <input required onChange={e => this.setState({ komentar: e.target.value })} value={this.state.komentar} type="text" class="form-control form-control-sm" placeholder="Press enter to post comment" />
+                            </div>
+                          </form>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </Modal>
 
             </div>
           </div>

@@ -13,6 +13,10 @@ import Select from 'react-select'
 
 class ProjectDetail extends React.Component{
     state = {
+      userId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).IDUser : '',
+      nameId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).Name : '',
+      levelId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
+
         projectId: this.props.match.params.projectId,
 
         project: {},
@@ -41,7 +45,10 @@ class ProjectDetail extends React.Component{
         isCandidate: false,
         listCandidate: [],
         idModul: '',
-        nameModul: ''
+        nameModul: '',
+
+        convers: [],
+        komentar: '',
     }
 
     setToDone = e => {
@@ -137,11 +144,13 @@ class ProjectDetail extends React.Component{
       let getNameModule = e.target.getAttribute('data-name');
       this.setState({ id: getIDModule, name: getNameModule, isTask: true });
       this.fetchTask(getIDModule);
+      this.fetchConvers(getIDModule);
     }
 
     setTaskToDone = e => {
-      e.preventDefault();
-      let IDTask = e.target.getAttribute('data-id');
+      // e.preventDefault();
+      // let IDTask = e.target.getAttribute('data-id');
+      let IDTask = e.target.value;
       let form = { IsDone: 1 };
       let url = `${API_URL}/api/project_task/${IDTask}`;
       axios.patch(url, form).then(res => {
@@ -150,8 +159,9 @@ class ProjectDetail extends React.Component{
     }
 
     setTaskToProgress = e => {
-      e.preventDefault();
-      let IDTask = e.target.getAttribute('data-id');
+      // e.preventDefault();
+      // let IDTask = e.target.getAttribute('data-id');
+      let IDTask = e.target.value;
       let form = { IsDone: 0 };
       let url = `${API_URL}/api/project_task/${IDTask}`;
       axios.patch(url, form).then(res => {
@@ -255,6 +265,22 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    sendKomentar = e => {
+      e.preventDefault()
+      let form = {
+        Jenis: 2,
+        TujuanID: this.state.id,
+        UserID: this.state.userId,
+        Description: this.state.komentar
+      }
+
+      let url = `${API_URL}/api/project_activity`
+      axios.post(url, form).then(res => {
+        this.setState({ komentar: '' })
+        this.fetchConvers(this.state.id)
+      })
+    }
+
     clearModule() {
       this.setState({ name: '', budget: '', assign: '' })
     }
@@ -351,6 +377,20 @@ class ProjectDetail extends React.Component{
           data.push({IDFiles: item.IDFiles, FileName: fileName[fileName.length-1], Url: item.FileName, Icon: getFormat })
         })
         this.setState({ files: data })
+      })
+    }
+
+    fetchConvers(id) {
+      let form = {
+        query: `SELECT pa.*, u.Name
+          FROM project_activity pa JOIN user u ON pa.UserID = u.IDUser
+          WHERE pa.Jenis = 2 AND pa.TujuanID = ?
+          ORDER BY IDActivity ASC`,
+        params: [id]
+      }
+      let url = `${API_URL}/dynamic`
+      axios.post(url, form).then(res => {
+        this.setState({ convers: res.data })
       })
     }
 
@@ -495,7 +535,7 @@ class ProjectDetail extends React.Component{
                                                 }
                                               </td>
                                               <td>
-                                                <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-cogs mr-2"></i>
+                                                <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-redo mr-2"></i>
                                                 <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
                                                 <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
                                               </td>
@@ -534,41 +574,82 @@ class ProjectDetail extends React.Component{
                                       </div>
                                     </Modal>
 
-                                    <Modal show={this.state.isTask} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
+                                    <Modal dialogClassName="modal-lg" show={this.state.isTask} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
                                       <div class="card" style={{marginBottom: 0}}>
-                                        <div class="card-body login-card-body">
-                                          <h4>Task on module <b>{this.state.name}</b></h4>
-
-                                          <div class="input-group mt-3">
-                                            <input onChange={e => this.setState({ nameTask: e.target.value })} value={this.state.nameTask} type="text" class="form-control" />
-                                            <span class="input-group-append">
-                                              <button onClick={this.saveTask} type="button" class="btn btn-info btn-flat">Add</button>
-                                            </span>
+                                        <div class="card-body login-card-body row">
+                                          <div class="col-sm-12 mb-3 text-center">
+                                            <h4><b>{this.state.name}</b></h4>
                                           </div>
 
-                                          <table class="table mt-3">
-                                            {
-                                              this.state.task.map(item => (
-                                                <tr key={item.IDTask}>
-                                                  <td width="20px">
-                                                    {
-                                                      item.IsDone === 0 &&
-                                                      <i onClick={this.setTaskToDone} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-check"></i>
-                                                    }
+                                          <div class="col-sm-6">
+                                            <h6>All tasks</h6>
 
-                                                    {
-                                                      item.IsDone === 1 &&
-                                                      <i onClick={this.setTaskToProgress} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-history"></i>
-                                                    }
-                                                  </td>
-                                                  <td style={item.IsDone === 1 ? {textDecoration: 'line-through'} : {}}>{item.Name}</td>
-                                                  <td class="text-right" width="30px">
-                                                    <i onClick={this.deleteTask} data-id={item.IDTask} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
-                                                  </td>
-                                                </tr>
-                                              ))
+                                            <div class="input-group mt-3">
+                                              <input onChange={e => this.setState({ nameTask: e.target.value })} value={this.state.nameTask} type="text" class="form-control" />
+                                              <span class="input-group-append">
+                                                <button onClick={this.saveTask} type="button" class="btn btn-info btn-flat">Add</button>
+                                              </span>
+                                            </div>
+
+                                            {
+                                              this.state.task.length === 0 && <span>No task available.</span>
                                             }
-                                          </table>
+
+
+                                            <ul class="todo-list ui-sortable mt-3" data-widget="todo-list">
+
+                                              {
+                                                this.state.task.map((item,i) => (
+                                                  <li class={item.IsDone ? 'done' : ''}>
+                                                    <div class="icheck-primary d-inline ml-2">
+                                                      <input onChange={item.IsDone ? this.setTaskToProgress : this.setTaskToDone} type="checkbox" value={item.IDTask} name={`task${i}`} id={`task${i}`} checked={item.IsDone ? 'checked' : ''} />
+                                                      <label for="todoCheck2"></label>
+                                                    </div>
+                                                    <span class="text ml-3">{item.Name}</span>
+                                                    <span onClick={this.deleteTask} data-id={item.IDTask} class="float-right" style={{cursor: 'pointer'}}><i data-id={item.IDTask} class="fa fa-trash"></i></span>
+                                                  </li>
+                                                ))
+                                              }
+
+                                            </ul>
+                                          </div>
+
+                                          <div class="col-sm-6">
+                                            <h6>Conversations</h6>
+                                            <div class="p-0">
+
+                                              <div class="card-footer card-comments">
+
+                                              {
+                                                this.state.convers.map((item,i) => (
+                                                  <div class="card-comment">
+                                                    <img title={item.Name} class="img-circle img-sm" src={`https://ui-avatars.com/api/?name=${item.Name}`} alt="Avatar" />
+
+                                                    <div class="comment-text">
+                                                      <span class="username">
+                                                        {item.Name}
+                                                        <span class="text-muted float-right">{moment(item.CreateAt).format('DD/MM/YYYY HH:mm')}</span>
+                                                      </span>
+                                                      {item.Description}
+                                                    </div>
+                                                  </div>
+                                                ))
+                                              }
+
+                                              </div>
+
+                                              <div class="card-footer">
+                                                <form onSubmit={this.sendKomentar}>
+                                                  <img title={this.state.nameId} alt="Avatar" class="img-fluid img-circle img-sm" src={`https://ui-avatars.com/api/?name=${this.state.nameId}`} />
+
+                                                  <div class="img-push">
+                                                    <input required onChange={e => this.setState({ komentar: e.target.value })} value={this.state.komentar} type="text" class="form-control form-control-sm" placeholder="Press enter to post comment" />
+                                                  </div>
+                                                </form>
+                                              </div>
+
+                                            </div>
+                                          </div>
 
                                         </div>
                                       </div>
@@ -730,7 +811,6 @@ class ProjectDetail extends React.Component{
 
                             <div class="mt-2 mb-3">
                               <button onClick={e => this.setState({ isFiles: true })} class="btn btn-sm btn-primary mr-2">Add file</button>
-                              <a href="#" class="btn btn-sm btn-warning mr-2">Report contact</a>
                             </div>
                           </div>
                         </div>
