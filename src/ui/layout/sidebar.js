@@ -73,6 +73,24 @@ class LayoutSidebar extends React.Component {
                 </Link>
               </li>
 
+              <li class="nav-header">PROJECT</li>
+              <li class="nav-item">
+                <Link to="/createProject" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>
+                    Create Project
+                  </p>
+                </Link>
+              </li>
+              <li class="nav-item">
+                <Link to="/DataProject" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>
+                    Data Project
+                  </p>
+                </Link>
+              </li>
+
             </ul>
           </nav>
         </div>
