@@ -18,6 +18,7 @@ class Talents extends React.Component {
         list: [],
 
         isModal: false,
+        showProfile: false,
 
     }
 
@@ -28,7 +29,6 @@ class Talents extends React.Component {
         let Email = e.target.getAttribute('data-email');
         let Password = e.target.getAttribute('data-pass');
         this.setState({ id: IDUser, name: Name, email: Email, pass: Password, isModal: true})
-
     }
     
     saveTalents = e => {
@@ -66,7 +66,6 @@ class Talents extends React.Component {
       }
     }
       
-
     deleteTalents = e => {
       e.preventDefault();
       let TalentID = e.target.getAttribute('data-id');
@@ -77,12 +76,20 @@ class Talents extends React.Component {
         })
     }
 
+    showProfile = e => {
+      e.preventDefault();
+      let IDUser = e.target.getAttribute('data-id');
+        let Name = e.target.getAttribute('data-name');
+        let Email = e.target.getAttribute('data-email');
+        this.setState({ id: IDUser, name: Name, email: Email, showProfile: true})
+    }
+
     componentDidMount() {
       this.fetchTalents()
     }
 
     clearForm() {
-      this.setState({ isModal: false, id: '', name: '', email: '', pass: '' })
+      this.setState({ isModal: false, showProfile: false, id: '', name: '', email: '', pass: '' })
     }
     
     fetchTalents() {
@@ -158,6 +165,13 @@ class Talents extends React.Component {
                               <td>{item.Email}</td>
                               <td>{moment(item.CreatedAt).format('DD-MM-YYYY HH:mm')}</td>
                               <td>
+                                <a onClick={this.showProfile} 
+                                  data-id={item.IDUser} 
+                                  data-name={item.Name}
+                                  data-email={item.Email}
+                                  class="btn btn-secondary btn-sm mr-2" href="#">
+                                  <i class="fas fa-user"></i>&nbsp;profile
+                                </a>
                                 <a onClick={this.selectTalents}
                                   data-id={item.IDUser}
                                   data-name={item.Name}
@@ -183,7 +197,6 @@ class Talents extends React.Component {
                 <div class="card" style={{marginBottom: 0}}>
                   <div class="card-body login-card-body">
                     <p class="login-box-msg">{this.state.id ? 'Update' : 'Create'} Talents </p>
-
                     <form onSubmit={this.saveTalents}>
                       <div class="input-group mb-3">
                         <input required onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
@@ -218,6 +231,36 @@ class Talents extends React.Component {
 
                   </div>
                 </div>
+              </Modal>
+
+              <Modal show={this.state.showProfile} onHide={this.clearForm.bind(this)} animation={false}>
+              <div class="card" style={{marginBottom: 0}}>
+                  <div class="card-body login-card-body">
+                    <div class="text-center mb-3">
+                      <img title={this.state.name} alt="Avatar" class="profile-user-img img-fluid img-circle" src={`https://ui-avatars.com/api/?name=${this.state.name}`} />
+                    </div>
+                    <form onSubmit={this.saveTalents}>
+                      <div class="input-group mb-3">
+                        <input required onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" disabled/>
+                        <div class="input-group-append">
+                          <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="input-group mb-3">
+                        <input required onChange={e => this.setState({ email: e.target.value })} value={this.state.email} type="email" class="form-control" placeholder="Email" disabled/>
+                        <div class="input-group-append">
+                          <div class="input-group-text">
+                            <span class="fas fa-envelope"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+
+                  </div>
+                </div>
+             
               </Modal>
 
             </div>
