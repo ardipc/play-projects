@@ -41,25 +41,29 @@ class HomeIndex extends React.Component {
   letMeDoIt = e => {
     e.preventDefault()
     if(this.state.userId) {
-      let userId = e.target.getAttribute('data-user')
-      let modulId = e.target.getAttribute('data-modul')
+      if(this.state.level === 2) {
+        let userId = e.target.getAttribute('data-user')
+        let modulId = e.target.getAttribute('data-modul')
 
-      let cek = `${API_URL}/api/project_modul_candidate?_where=(UserID,eq,${userId})~and(ModuleID,eq,${modulId})`;
-      axios.get(cek).then(res => {
-        if(res.data.length === 1) {
-          toast.info(`Ehh, Kamu sudah pernah ambil modul ini lohh. Coba tunggu informasi dari Administrator yaa...`)
-        } else {
-          let form = {
-            UserID: userId,
-            ModuleID: modulId
-          };
-          let url = `${API_URL}/api/project_modul_candidate`;
-          axios.post(url, form).then(res => {
-            toast.success(`Tunggu konfirmasi Administrator untuk memilih kamu yaa.`)
-            this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })
-          })
-        }
-      })
+        let cek = `${API_URL}/api/project_modul_candidate?_where=(UserID,eq,${userId})~and(ModuleID,eq,${modulId})`;
+        axios.get(cek).then(res => {
+          if(res.data.length === 1) {
+            toast.info(`Ehh, Kamu sudah pernah ambil modul ini lohh. Coba tunggu informasi dari Administrator yaa...`)
+          } else {
+            let form = {
+              UserID: userId,
+              ModuleID: modulId
+            };
+            let url = `${API_URL}/api/project_modul_candidate`;
+            axios.post(url, form).then(res => {
+              toast.success(`Tunggu konfirmasi Administrator untuk memilih kamu yaa.`)
+              this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })
+            })
+          }
+        })
+      } else {
+        toast.info(`Kamu bukan talent, jadi tidak bisa mengerjakan ini...`)
+      }
     } else {
       toast.info(`Masuk ke sistem dulu yaa...`)
     }

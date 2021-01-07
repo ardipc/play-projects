@@ -103,7 +103,7 @@ class ProjectsIndex extends React.Component {
     let url = `${API_URL}/api/project/${IDProject}`
     axios.get(url).then(res => {
 
-      let status = this.state.listStatus.filter(item => item.IDLevel === res.data[0].LevelID);
+      let status = this.state.listStatus.filter(item => item.value === res.data[0].StatusID);
       let client = this.state.listClient.filter(item => item.value === res.data[0].Client);
       let leader = this.state.listLeader.filter(item => item.value === res.data[0].Leader);
 
