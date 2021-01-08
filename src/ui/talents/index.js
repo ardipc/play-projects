@@ -7,7 +7,7 @@ import { API_URL } from '../../config/env';
 
 import moment from 'moment-timezone';
 import { toast } from "react-toastify";
- 
+
 class Talents extends React.Component {
     state = {
         id: '',
@@ -30,7 +30,7 @@ class Talents extends React.Component {
         let Password = e.target.getAttribute('data-pass');
         this.setState({ id: IDUser, name: Name, email: Email, pass: Password, isModal: true})
     }
-    
+
     saveTalents = e => {
       e.preventDefault();
       let { id, name, email, pass} = this.state;
@@ -42,7 +42,7 @@ class Talents extends React.Component {
             Password: pass,
             LevelID: '2'
           };
-        
+
         let url = `${ API_URL }/api/user/${id}`;
         axios.patch(url, form).then(res => {
           this.fetchTalents()
@@ -65,7 +65,7 @@ class Talents extends React.Component {
         })
       }
     }
-      
+
     deleteTalents = e => {
       e.preventDefault();
       let TalentID = e.target.getAttribute('data-id');
@@ -91,7 +91,7 @@ class Talents extends React.Component {
     clearForm() {
       this.setState({ isModal: false, showProfile: false, id: '', name: '', email: '', pass: '' })
     }
-    
+
     fetchTalents() {
       let url = `${ API_URL }/api/user?_where=(LevelID,eq,2)`;
       axios.get(url).then(res => {
@@ -165,8 +165,8 @@ class Talents extends React.Component {
                               <td>{item.Email}</td>
                               <td>{moment(item.CreatedAt).format('DD-MM-YYYY HH:mm')}</td>
                               <td>
-                                <a onClick={this.showProfile} 
-                                  data-id={item.IDUser} 
+                                <a onClick={this.showProfile}
+                                  data-id={item.IDUser}
                                   data-name={item.Name}
                                   data-email={item.Email}
                                   class="btn btn-secondary btn-sm mr-2" href="#">
@@ -260,7 +260,7 @@ class Talents extends React.Component {
 
                   </div>
                 </div>
-             
+
               </Modal>
 
             </div>
@@ -268,7 +268,7 @@ class Talents extends React.Component {
         </div>
 
       </div>
-    
+
         )
     }
 

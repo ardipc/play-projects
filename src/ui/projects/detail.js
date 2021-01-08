@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom'
 
 import axios from 'axios'
-import { API_URL } from '../../config/env'
+import { API_URL, MACHINE } from '../../config/env'
 import { toRupiah, toNumber } from '../../helper/format'
 
 import { Modal, Button } from 'react-bootstrap';
@@ -49,6 +49,11 @@ class ProjectDetail extends React.Component{
 
         convers: [],
         komentar: '',
+
+        listStatus: [],
+        status: {},
+
+        leader: {},
     }
 
     setToDone = e => {
@@ -199,9 +204,16 @@ class ProjectDetail extends React.Component{
       axios.post(url, form).then(res => {
 
         let data = res.data;
-        let split = data.split('\\');
+        let split, getFile;
 
-        let getFile = split[3];
+        if(MACHINE === "linux") {
+          split = data.split('/');
+          getFile = split[2];
+        } else {
+          split = data.split('\\');
+          getFile = split[3];
+        }
+
         let form = { FileName: getFile, ProjectID: this.state.projectId };
         let url = `${API_URL}/api/project_files`;
         axios.post(url, form).then(res => {
@@ -281,6 +293,30 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    updateStatusProject = e => {
+      let form = {
+        StatusID: e.value
+      }
+
+      let url = `${API_URL}/api/project/${this.state.projectId}`;
+      axios.patch(url, form).then(res => {
+        toast.success(`Status project updated.`);
+        this.fetchProjectsDetail(this.state.projectId)
+      })
+    }
+
+    updateLeaderProject = e => {
+      let form = {
+        Leader: e.value
+      }
+
+      let url = `${API_URL}/api/project/${this.state.projectId}`;
+      axios.patch(url, form).then(res => {
+        toast.success(`Leader project updated.`);
+        this.fetchProjectsDetail(this.state.projectId)
+      })
+    }
+
     clearModule() {
       this.setState({ name: '', budget: '', assign: '' })
     }
@@ -309,25 +345,46 @@ class ProjectDetail extends React.Component{
     }
 
     fetchProjectsDetail(projectId) {
-      let url = `${API_URL}/api/xjoin`;
-        url += `?_join=ul.user_level,_j,u.user,_j,p.project,_lj,uu.user,_j,s.project_status`
-        url += `&_on1=(ul.IDLevel,eq,u.LevelID)`
-        url += `&_on2=(u.IDUser,eq,p.Client)`
-        url += `&_on3=(uu.IDUser,eq,p.Leader)`
-        url += `&_on4=(s.IDStatus,eq,p.StatusID)`
-        url += `&_fields=p.IDProject,p.Name,p.Description,p.Leader,p.Client,u.Name,p.Leader,uu.Name,p.StartDate,p.EndDate,p.StatusID,s.Name`
-        url += `&_where=(p.IDProject,eq,${projectId})`;
+      let url = `${API_URL}/api/project_status`;
+      axios.get(url).then(async res => {
+        let data = [];
+        res.data.map(item => {
+          data.push({ value: item.IDStatus, label: item.Name });
+        })
+        this.setState({ listStatus: data })
 
-      console.log('state: ', url)
+        let urlT = `${API_URL}/api/user?_where=(LevelID,eq,2)`;
+        await axios.get(urlT).then(res => {
 
-      axios.get(url).then(res => {
-        let data = res.data;
+          let data = [];
+          res.data.map(item => {
+            data.push({ value: item.IDUser, label: item.Name })
+          })
 
-        console.log('state: ', data)
+          this.setState({ listTalents: data })
+        })
 
-        if(data.length === 1) {
-          this.setState({ project: data[0] })
-        }
+        let url = `${API_URL}/api/xjoin`;
+          url += `?_join=ul.user_level,_j,u.user,_j,p.project,_lj,uu.user,_j,s.project_status`
+          url += `&_on1=(ul.IDLevel,eq,u.LevelID)`
+          url += `&_on2=(u.IDUser,eq,p.Client)`
+          url += `&_on3=(uu.IDUser,eq,p.Leader)`
+          url += `&_on4=(s.IDStatus,eq,p.StatusID)`
+          url += `&_fields=p.IDProject,p.Name,p.Description,p.Leader,p.Client,u.Name,p.Leader,uu.Name,p.StartDate,p.EndDate,p.StatusID,s.Name`
+          url += `&_where=(p.IDProject,eq,${projectId})`;
+
+        await axios.get(url).then(res => {
+          let data = res.data;
+
+          if(data.length === 1) {
+            let status = this.state.listStatus.filter(item => item.value === data[0].p_StatusID)
+
+            let leader = this.state.listTalents.filter(item => item.value === data[0].p_Leader);
+            console.log('leader: ', leader)
+
+            this.setState({ project: data[0], status: status[0], leader: leader[0] })
+          }
+        })
       })
     }
 
@@ -456,8 +513,8 @@ class ProjectDetail extends React.Component{
                               <div class="col-12 col-sm-3">
                                 <div class="info-box bg-light">
                                   <div class="info-box-content">
-                                    <span class="info-box-text text-center text-muted">Status project</span>
-                                    <span class="info-box-number text-center text-muted mb-0">{this.state.project.s_Name}</span>
+                                    <span class="info-box-text text-center text-muted" style={{marginTop: '-6px'}}>Status project</span>
+                                    <Select onChange={this.updateStatusProject} value={this.state.status} options={this.state.listStatus} />
                                   </div>
                                 </div>
                               </div>
@@ -772,7 +829,7 @@ class ProjectDetail extends React.Component{
                                 <b class="d-block">{this.state.project.u_Name}</b>
                               </p>
                               <p class="text-sm">Leader
-                                <b class="d-block">{this.state.project.uu_Name ? this.state.project.uu_Name : 'Not set' }</b>
+                                <Select onChange={this.updateLeaderProject} value={this.state.leader} options={this.state.listTalents} />
                               </p>
                             </div>
 
