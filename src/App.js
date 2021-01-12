@@ -5,6 +5,7 @@ import { SOCKET_URL, SOCKET_PREFIX } from './config/env';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// inisiasi for socket realtime
 import io from 'socket.io-client';
 import SocketContext from './helper/socket';
 
