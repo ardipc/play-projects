@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom'
 
+import SocketContext from '../../helper/socket'
+
 import axios from 'axios'
 import { API_URL, MACHINE } from '../../config/env'
 import { toRupiah, toNumber } from '../../helper/format'
@@ -17,43 +19,43 @@ class ProjectDetail extends React.Component{
       nameId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).Name : '',
       levelId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
 
-        projectId: this.props.match.params.projectId,
+      projectId: this.props.match.params.projectId,
 
-        project: {},
+      project: {},
 
-        files: [],
-        isFiles: false,
-        idFile: '',
-        fileName: '',
-        tempFile: Math.random().toString(36),
+      files: [],
+      isFiles: false,
+      idFile: '',
+      fileName: '',
+      tempFile: Math.random().toString(36),
 
-        modulDone: 0,
-        modul: [],
-        isModule: false,
-        id: '',
-        name: '',
-        budget: 0,
-        assign: '',
+      modulDone: 0,
+      modul: [],
+      isModule: false,
+      id: '',
+      name: '',
+      budget: 0,
+      assign: '',
 
-        listTalents: [],
+      listTalents: [],
 
-        task: [],
-        isTask: false,
-        idTask: '',
-        nameTask: '',
+      task: [],
+      isTask: false,
+      idTask: '',
+      nameTask: '',
 
-        isCandidate: false,
-        listCandidate: [],
-        idModul: '',
-        nameModul: '',
+      isCandidate: false,
+      listCandidate: [],
+      idModul: '',
+      nameModul: '',
 
-        convers: [],
-        komentar: '',
+      convers: [],
+      komentar: '',
 
-        listStatus: [],
-        status: {},
+      listStatus: [],
+      status: {},
 
-        leader: {},
+      leader: {},
     }
 
     setToDone = e => {
@@ -74,6 +76,7 @@ class ProjectDetail extends React.Component{
 
       let url = `${API_URL}/api/project_modul/${getIDModule}`;
       axios.patch(url, form).then(res => {
+        this.props.socket.emit('request', {event: 'module'})
         this.fetchModule(this.state.projectId)
       })
     }
@@ -150,6 +153,12 @@ class ProjectDetail extends React.Component{
       this.setState({ id: getIDModule, name: getNameModule, isTask: true });
       this.fetchTask(getIDModule);
       this.fetchConvers(getIDModule);
+
+      this.props.socket.on('response', (data) => {
+        if(data.event === "task") {
+          this.fetchConvers(getIDModule);
+        }
+      })
     }
 
     setTaskToDone = e => {
@@ -289,6 +298,7 @@ class ProjectDetail extends React.Component{
       let url = `${API_URL}/api/project_activity`
       axios.post(url, form).then(res => {
         this.setState({ komentar: '' })
+        this.props.socket.emit('request', {event: "task"})
         this.fetchConvers(this.state.id)
       })
     }
@@ -342,6 +352,12 @@ class ProjectDetail extends React.Component{
       this.fetchModule(this.state.projectId)
       this.fetchFiles(this.state.projectId)
       this.fetchTalents()
+
+      this.props.socket.on('response', (data) => {
+        if(data.event === "module") {
+          this.fetchModule(this.state.projectId)
+        }
+      })
     }
 
     fetchProjectsDetail(projectId) {
@@ -468,7 +484,7 @@ class ProjectDetail extends React.Component{
                       <li class="breadcrumb-item">
                         <Link to="/">Home</Link>
                       </li>
-                      <li class="breadcrumb-item active">Detail</li>
+                      <li onClick={this.sendSocket} class="breadcrumb-item active">Detail</li>
                     </ol>
                   </div>
                 </div>
@@ -884,4 +900,10 @@ class ProjectDetail extends React.Component{
     }
 }
 
-export default ProjectDetail;
+const ProjectDetailSocket = (props) => (
+  <SocketContext.Consumer>
+    {socket => <ProjectDetail {...props} socket={socket} />}
+  </SocketContext.Consumer>
+)
+
+export default ProjectDetailSocket;

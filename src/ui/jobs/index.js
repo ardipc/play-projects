@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import SocketContext from '../../helper/socket'
+
 import axios from 'axios'
 import { API_URL } from '../../config/env'
 import { toRupiah } from '../../helper/format'
@@ -99,6 +101,12 @@ class HomeIndex extends React.Component {
     this.fetchTaskByModule(id)
     this.fetchConvers(id)
     this.fetchFiles(project)
+
+    this.props.socket.on('response', (data) => {
+      if(data.event === "task") {
+        this.fetchConvers(id);
+      }
+    })
   }
 
   sendKomentar = e => {
@@ -113,6 +121,7 @@ class HomeIndex extends React.Component {
     let url = `${API_URL}/api/project_activity`
     axios.post(url, form).then(res => {
       this.setState({ komentar: '' })
+      this.props.socket.emit('request', {event: "task"})
       this.fetchConvers(this.state.idModul)
     })
   }
@@ -125,6 +134,7 @@ class HomeIndex extends React.Component {
     let url = `${API_URL}/api/project_modul/${id}`
     axios.patch(url, {IsDone: 1}).then(res => {
       toast.info(`Modul ${name} set to Done`)
+      this.props.socket.emit('request', {event: 'module'})
       this.fetchModule()
     })
   }
@@ -153,6 +163,12 @@ class HomeIndex extends React.Component {
 
   componentDidMount() {
     this.fetchModule()
+
+    this.props.socket.on('response', (data) => {
+      if(data.event === "module") {
+        this.fetchModule()
+      }
+    })
   }
 
   fetchModule() {
@@ -477,4 +493,10 @@ class HomeIndex extends React.Component {
 
 }
 
-export default HomeIndex;
+const HomeIndexSocket = (props) => (
+  <SocketContext.Consumer>
+    {socket => <HomeIndex {...props} socket={socket} />}
+  </SocketContext.Consumer>
+)
+
+export default HomeIndexSocket;
