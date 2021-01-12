@@ -1,8 +1,12 @@
 import './App.css';
 import React from 'react';
+import { SOCKET_URL, SOCKET_PREFIX } from './config/env';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import io from 'socket.io-client';
+import SocketContext from './helper/socket';
 
 import Public from './routes/public';
 import Private from './routes/private';
@@ -37,14 +41,14 @@ class App extends React.Component {
   }
 
   render() {
-
+    const socket = io(SOCKET_URL, {path: SOCKET_PREFIX});
     const Main = ({isPrivate}) => isPrivate ? <Private changeToPrivate={this.changeToPrivate} /> : <Public changeToPrivate={this.changeToPrivate} />;
 
     return (
-      <>
+      <SocketContext.Provider value={socket}>
         <Main isPrivate={this.state.isLogin} />
         <ToastContainer autoClose={2000} />
-      </>
+      </SocketContext.Provider>
     );
   }
 
