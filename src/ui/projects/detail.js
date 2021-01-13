@@ -56,6 +56,9 @@ class ProjectDetail extends React.Component{
       status: {},
 
       leader: {},
+
+      chat: '',
+      chatList: [],
     }
 
     setToDone = e => {
@@ -65,7 +68,7 @@ class ProjectDetail extends React.Component{
 
       let url = `${API_URL}/api/project_modul/${getIDModule}`;
       axios.patch(url, form).then(res => {
-        this.fetchModule(this.state.projectId)
+        this.props.socket.emit('request', {event: 'module'})
       })
     }
 
@@ -77,7 +80,6 @@ class ProjectDetail extends React.Component{
       let url = `${API_URL}/api/project_modul/${getIDModule}`;
       axios.patch(url, form).then(res => {
         this.props.socket.emit('request', {event: 'module'})
-        this.fetchModule(this.state.projectId)
       })
     }
 
@@ -311,7 +313,7 @@ class ProjectDetail extends React.Component{
       let url = `${API_URL}/api/project/${this.state.projectId}`;
       axios.patch(url, form).then(res => {
         toast.success(`Status project updated.`);
-        this.fetchProjectsDetail(this.state.projectId)
+        this.props.socket.emit('request', {event: 'project'})
       })
     }
 
@@ -323,7 +325,23 @@ class ProjectDetail extends React.Component{
       let url = `${API_URL}/api/project/${this.state.projectId}`;
       axios.patch(url, form).then(res => {
         toast.success(`Leader project updated.`);
-        this.fetchProjectsDetail(this.state.projectId)
+        this.props.socket.emit('request', {event: 'project'})
+      })
+    }
+
+    sendChat = e => {
+      e.preventDefault()
+      let form = {
+        Jenis: 0,
+        TujuanID: this.state.projectId,
+        UserID: this.state.userId,
+        Description: this.state.chat
+      }
+
+      let url = `${API_URL}/api/project_activity`
+      axios.post(url, form).then(res => {
+        this.setState({ chat: '' })
+        this.props.socket.emit('request', {event: 'project-conversation'})
       })
     }
 
@@ -336,7 +354,7 @@ class ProjectDetail extends React.Component{
     }
 
     closeModule() {
-      this.setState({ isModule: false, name: '', budget: '', assign: '' })
+      this.setState({ isModule: false, name: '', budget: '', assign: '', idModul: '' })
     }
 
     clearTask() {
@@ -351,12 +369,34 @@ class ProjectDetail extends React.Component{
       this.fetchProjectsDetail(this.state.projectId)
       this.fetchModule(this.state.projectId)
       this.fetchFiles(this.state.projectId)
+      this.fetchChat(this.state.projectId)
       this.fetchTalents()
 
       this.props.socket.on('response', (data) => {
         if(data.event === "module") {
           this.fetchModule(this.state.projectId)
         }
+
+        if(data.event === "project-conversation") {
+          this.fetchChat(this.state.projectId)
+        }
+
+        if(data.event === "project") {
+          this.fetchProjectsDetail(this.state.projectId)
+        }
+
+      })
+    }
+
+    fetchChat(projectId) {
+      let url = `${API_URL}/api/xjoin`;
+        url += `?_join=u.user,_j,pa.project_activity`
+        url += `&_on1=(u.IDUser,eq,pa.UserID)`
+        url += `&_fields=pa.IDActivity,u.Name,pa.Description,pa.Jenis,pa.TujuanID,pa.UserID,pa.Link,pa.CreateAt`
+        url += `&_where=(pa.TujuanID,eq,${projectId})~and(pa.Jenis,eq,0)`;
+
+      axios.get(url).then(res => {
+        this.setState({ chatList: res.data })
       })
     }
 
@@ -474,7 +514,7 @@ class ProjectDetail extends React.Component{
         return(
           <div class="content-wrapper">
             <div class="content-header">
-              <div class="container">
+              <div class="container-fluid">
                 <div class="row mb-2">
                   <div class="col-sm-6">
                     <h1 class="m-0">Detail Project</h1>
@@ -492,365 +532,300 @@ class ProjectDetail extends React.Component{
             </div>
 
             <div class="content">
-              <div class="container">
+              <div class="container-fluid">
                 <div class="row">
 
-                  <div class="col-sm-12">
+                  <div class="col-sm-8">
 
-                    <div class="card">
+                    <div class="card card-primary card-outline">
+
                       <div class="card-header">
-                        <h3 class="card-title">Projects Detail</h3>
-
-                        <div class="card-tools">
-                          {
-                            /**
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                            <i class="fas fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                            <i class="fas fa-times"></i>
-                            </button>
-                            */
-                          }
-                        </div>
+                        <h3 class="text-primary" style={{margin: 0}}>{this.state.project.p_Name}</h3>
                       </div>
+
                       <div class="card-body">
                         <div class="row">
-                          <div class="col-12 col-md-12 col-lg-8 order-2 order-md-1">
-                            <div class="row">
-                              <div class="col-12 col-sm-3">
-                                <div class="info-box bg-light">
-                                  <div class="info-box-content">
-                                    <span class="info-box-text text-center text-muted">Progress</span>
-                                    <span class="info-box-number text-center text-muted mb-0">{this.state.modulDone/this.state.modul.length * 100}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-12 col-sm-3">
-                                <div class="info-box bg-light">
-                                  <div class="info-box-content">
-                                    <span class="info-box-text text-center text-muted" style={{marginTop: '-6px'}}>Status project</span>
-                                    <Select onChange={this.updateStatusProject} value={this.state.status} options={this.state.listStatus} />
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-12 col-sm-3">
-                                <div class="info-box bg-light">
-                                  <div class="info-box-content">
-                                    <span class="info-box-text text-center text-muted">Start date</span>
-                                    <span class="info-box-number text-center text-muted mb-0">{moment(this.state.project.p_StartDate).format('DD/MM/YYYY')}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-12 col-sm-3">
-                                <div class="info-box bg-light">
-                                  <div class="info-box-content">
-                                    <span class="info-box-text text-center text-muted">End date</span>
-                                    <span class="info-box-number text-center text-muted mb-0">{moment(this.state.project.p_EndDate).format('DD/MM/YYYY')}</span>
-                                  </div>
-                                </div>
-                              </div>
+
+                          <div class="col-12 col-sm-12">
+                            <p class="text-sm" style={{border: '1px solid #e9e9e9', padding: '8px'}}>
+                              {this.state.project.p_Description}
+                            </p>
+                          </div>
+
+                          <div class="col-12 col-sm-6">
+                            <div class="text-muted">
+                              <p class="text-sm"><b>Leader</b>
+                                <Select onChange={this.updateLeaderProject} value={this.state.leader} options={this.state.listTalents} />
+                              </p>
                             </div>
+                          </div>
 
-                            <div class="row">
-                                <div class="col-12">
-                                    <h4>
-                                      Modules
-                                      <button onClick={e => this.setState({ isModule: true })} class="btn btn-sm btn-primary float-right">
-                                        <i class="fa fa-plus"></i>&nbsp;Add module
-                                      </button>
-                                    </h4>
-
-                                    <table class="table table-hover projects">
-                                      <tbody>
-                                        {
-                                          this.state.modul.map(item => (
-                                            <tr>
-                                              <td>#{item.m_IDModule}</td>
-                                              <td>
-                                                <a href="#" onClick={this.selectModuleTask} data-id={item.m_IDModule} data-name={item.m_Name}>
-                                                  {item.m_Name}
-                                                </a>
-                                              </td>
-                                              <td>{toRupiah(item.m_Budget)}</td>
-                                              <td>{item.m_IsDone ? <span class="badge badge-success">Done</span> : <span class="badge badge-danger">Undone</span>}</td>
-
-                                              <td>
-                                                {
-                                                  item.m_IsDone === 0 &&
-                                                  <a title="Set to done" onClick={this.setToDone} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
-                                                    <i data-id={item.m_IDModule} class="fa fa-check"></i>
-                                                  </a>
-                                                }
-
-                                                {
-                                                  item.m_IsDone === 1 &&
-                                                  <a title="Set to progress" onClick={this.setToProgress} data-id={item.m_IDModule} class="btn btn-sm btn-danger mr-2">
-                                                    <i data-id={item.m_IDModule} class="fa fa-history"></i>
-                                                  </a>
-                                                }
-                                              </td>
-                                              <td class="text-center">
-                                                {
-                                                  item.m_Assign &&
-                                                  <ul class="list-inline">
-                                                    <li class="list-inline-item">
-                                                      <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
-                                                    </li>
-                                                  </ul>
-                                                }
-
-                                                {
-                                                  !item.m_Assign &&
-                                                  <a title="See all candidate" onClick={this.showCandidate} data-name={item.m_Name} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
-                                                    <i data-id={item.m_IDModule} data-name={item.m_Name} class="fa fa-users"></i>
-                                                  </a>
-                                                }
-                                              </td>
-                                              <td>
-                                                <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-redo mr-2"></i>
-                                                <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
-                                                <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
-                                              </td>
-                                            </tr>
-                                          ))
-                                        }
-
-                                      </tbody>
-                                    </table>
-
-                                    <Modal show={this.state.isModule} onHide={this.closeModule.bind(this)} animation={false}>
-                                      <div class="card" style={{marginBottom: 0}}>
-                                        <div class="card-body login-card-body">
-
-                                          <form onSubmit={this.saveModule}>
-                                            <div class="form-group mb-3">
-                                              <label>Name</label>
-                                              <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
-                                            </div>
-                                            <div class="form-group mb-3">
-                                              <label>Budget</label>
-                                              <input onChange={e => this.setState({ budget: e.target.value })} value={this.state.budget} type="number" class="form-control" placeholder="Budget" />
-                                            </div>
-
-                                            <div class="form-group mb-3">
-                                              <label>Assign to</label>
-                                              <Select onChange={e => this.setState({ assign: e })} value={this.state.assign} options={this.state.listTalents} />
-                                            </div>
-                                            <div class="form-group" style={{marginBottom: 0}}>
-                                              <button type="submit" class="btn btn-primary float-right">Save</button>
-                                              <button onClick={this.closeModule.bind(this)} type="button" class="btn btn-default">Close</button>
-                                            </div>
-                                          </form>
-
-                                        </div>
-                                      </div>
-                                    </Modal>
-
-                                    <Modal dialogClassName="modal-lg" show={this.state.isTask} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
-                                      <div class="card" style={{marginBottom: 0}}>
-                                        <div class="card-body login-card-body row">
-                                          <div class="col-sm-12 mb-3 text-center">
-                                            <h4><b>{this.state.name}</b></h4>
-                                          </div>
-
-                                          <div class="col-sm-6">
-                                            <h6>All tasks</h6>
-
-                                            <div class="input-group mt-3">
-                                              <input onChange={e => this.setState({ nameTask: e.target.value })} value={this.state.nameTask} type="text" class="form-control" />
-                                              <span class="input-group-append">
-                                                <button onClick={this.saveTask} type="button" class="btn btn-info btn-flat">Add</button>
-                                              </span>
-                                            </div>
-
-                                            {
-                                              this.state.task.length === 0 && <span>No task available.</span>
-                                            }
-
-
-                                            <ul class="todo-list ui-sortable mt-3" data-widget="todo-list">
-
-                                              {
-                                                this.state.task.map((item,i) => (
-                                                  <li class={item.IsDone ? 'done' : ''}>
-                                                    <div class="icheck-primary d-inline ml-2">
-                                                      <input onChange={item.IsDone ? this.setTaskToProgress : this.setTaskToDone} type="checkbox" value={item.IDTask} name={`task${i}`} id={`task${i}`} checked={item.IsDone ? 'checked' : ''} />
-                                                      <label for="todoCheck2"></label>
-                                                    </div>
-                                                    <span class="text ml-3">{item.Name}</span>
-                                                    <span onClick={this.deleteTask} data-id={item.IDTask} class="float-right" style={{cursor: 'pointer'}}><i data-id={item.IDTask} class="fa fa-trash"></i></span>
-                                                  </li>
-                                                ))
-                                              }
-
-                                            </ul>
-                                          </div>
-
-                                          <div class="col-sm-6">
-                                            <h6>Conversations</h6>
-                                            <div class="p-0">
-
-                                              <div class="card-footer card-comments">
-
-                                              {
-                                                this.state.convers.map((item,i) => (
-                                                  <div class="card-comment">
-                                                    <img title={item.Name} class="img-circle img-sm" src={`https://ui-avatars.com/api/?name=${item.Name}`} alt="Avatar" />
-
-                                                    <div class="comment-text">
-                                                      <span class="username">
-                                                        {item.Name}
-                                                        <span class="text-muted float-right">{moment(item.CreateAt).format('DD/MM/YYYY HH:mm')}</span>
-                                                      </span>
-                                                      {item.Description}
-                                                    </div>
-                                                  </div>
-                                                ))
-                                              }
-
-                                              </div>
-
-                                              <div class="card-footer">
-                                                <form onSubmit={this.sendKomentar}>
-                                                  <img title={this.state.nameId} alt="Avatar" class="img-fluid img-circle img-sm" src={`https://ui-avatars.com/api/?name=${this.state.nameId}`} />
-
-                                                  <div class="img-push">
-                                                    <input required onChange={e => this.setState({ komentar: e.target.value })} value={this.state.komentar} type="text" class="form-control form-control-sm" placeholder="Press enter to post comment" />
-                                                  </div>
-                                                </form>
-                                              </div>
-
-                                            </div>
-                                          </div>
-
-                                        </div>
-                                      </div>
-                                    </Modal>
-
-                                    <Modal show={this.state.isCandidate} onHide={() => this.closeCandidate()} animation={false}>
-                                      <div class="card" style={{marginBottom: 0}}>
-                                        <div class="card-body login-card-body">
-                                          <h4>Candidate on <b>{this.state.nameModul}</b></h4>
-
-                                          <table class="table projects mt-3">
-                                            {
-                                              this.state.listCandidate.length === 0 && <span>No candidates yet</span>
-                                            }
-                                            {
-                                              this.state.listCandidate.map(item => (
-                                                <tr key={item.pmc_IDCandidate}>
-                                                  <td width="20px">
-                                                    #{item.pmc_IDCandidate}
-                                                  </td>
-                                                  <td width="20px">
-                                                    <ul class="list-inline">
-                                                        <li class="list-inline-item">
-                                                            <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
-                                                        </li>
-                                                    </ul>
-                                                  </td>
-                                                  <td>{item.u_Name}</td>
-                                                  <td class="text-right" width="30px">
-                                                    <i onClick={this.updateAssignModule} data-talent={item.pmc_UserID} data-id={item.pmc_IDCandidate} style={{cursor: 'pointer'}} class="fa fa-check"></i>
-                                                  </td>
-                                                </tr>
-                                              ))
-                                            }
-                                          </table>
-
-                                        </div>
-                                      </div>
-                                    </Modal>
-
-                                </div>
+                          <div class="col-12 col-sm-6">
+                            <div class="text-muted">
+                              <p class="text-sm"><b>Client</b>
+                                <input class="form-control" value={this.state.project.u_Name} />
+                              </p>
                             </div>
+                          </div>
 
-                            <div class="row">
-                              <div class="col-12">
-                                <h4>Activity</h4>
-
-                                <span>Under Construction</span>
-
-                                {
-                                  /**
-
-                                <div class="post">
-                                  <div class="user-block">
-                                    <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" />
-                                    <span class="username">
-                                                                  <a href="#">Jonathan Burke Jr.</a>
-                                                              </span>
-                                    <span class="description">Shared publicly - 7:45 PM today</span>
-                                  </div>
-                                  <p>
-                                    Lorem ipsum represents a long-held tradition for designers, typographers and the like. Some people hate it and argue for its demise, but others ignore.
-                                  </p>
-
-                                  <p>
-                                    <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 1 v2</a>
-                                  </p>
-                                </div>
-
-                                <div class="post clearfix">
-                                  <div class="user-block">
-                                    <img class="img-circle img-bordered-sm" src="/dist/img/user7-128x128.jpg" alt="User Image" />
-                                    <span class="username">
-                                                                  <a href="#">Sarah Ross</a>
-                                                              </span>
-                                    <span class="description">Sent you a message - 3 days ago</span>
-                                  </div>
-                                  <p>
-                                    Lorem ipsum represents a long-held tradition for designers, typographers and the like. Some people hate it and argue for its demise, but others ignore.
-                                  </p>
-                                  <p>
-                                    <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 2</a>
-                                  </p>
-                                </div>
-
-                                <div class="post">
-                                  <div class="user-block">
-                                    <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" />
-                                    <span class="username">
-                                                                  <a href="#">Jonathan Burke Jr.</a>
-                                                              </span>
-                                    <span class="description">Shared publicly - 5 days ago</span>
-                                  </div>
-                                  <p>
-                                    Lorem ipsum represents a long-held tradition for designers, typographers and the like. Some people hate it and argue for its demise, but others ignore.
-                                  </p>
-
-                                  <p>
-                                    <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 1 v1</a>
-                                  </p>
-                                </div>
-
-                                  */
-                                }
-
+                          <div class="col-12 col-sm-3">
+                            <div class="info-box bg-light">
+                              <div class="info-box-content">
+                                <span class="info-box-text text-center text-muted">Progress</span>
+                                <span class="info-box-number text-center text-muted mb-0">{this.state.modulDone/this.state.modul.length * 100}%</span>
                               </div>
                             </div>
                           </div>
 
-                          <div class="col-12 col-md-12 col-lg-4 order-1 order-md-2">
-                            <h3 class="text-primary"><i class="fas fa-paint-brush"></i> {this.state.project.p_Name}</h3>
-
-                            <p class="text-muted">
-                              {this.state.project.p_Description}
-                            </p>
-                            <br />
-
-                            <div class="text-muted">
-                              <p class="text-sm">Client
-                                <b class="d-block">{this.state.project.u_Name}</b>
-                              </p>
-                              <p class="text-sm">Leader
-                                <Select onChange={this.updateLeaderProject} value={this.state.leader} options={this.state.listTalents} />
-                              </p>
+                          <div class="col-12 col-sm-3">
+                            <div class="info-box bg-light">
+                              <div class="info-box-content">
+                                <span class="info-box-text text-center text-muted" style={{marginTop: '-6px'}}>Status project</span>
+                                <Select onChange={this.updateStatusProject} value={this.state.status} options={this.state.listStatus} />
+                              </div>
                             </div>
+                          </div>
 
-                            <h5 class="mt-5 text-muted">Project files</h5>
-                            <ul class="list-unstyled">
+                          <div class="col-12 col-sm-3">
+                            <div class="info-box bg-light">
+                              <div class="info-box-content">
+                                <span class="info-box-text text-center text-muted">Start date</span>
+                                <span class="info-box-number text-center text-muted mb-0">{moment(this.state.project.p_StartDate).format('DD/MM/YYYY')}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="col-12 col-sm-3">
+                            <div class="info-box bg-light">
+                              <div class="info-box-content">
+                                <span class="info-box-text text-center text-muted">End date</span>
+                                <span class="info-box-number text-center text-muted mb-0">{moment(this.state.project.p_EndDate).format('DD/MM/YYYY')}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4>
+                                  Modules
+                                  <button onClick={e => this.setState({ isModule: true })} class="btn btn-sm btn-primary float-right">Add</button>
+                                </h4>
+
+                                <table class="table table-hover projects mt-3">
+                                  <tbody>
+                                    {
+                                      this.state.modul.map(item => (
+                                        <tr>
+                                          <td>#{item.m_IDModule}</td>
+                                          <td>
+                                            <a href="#" onClick={this.selectModuleTask} data-id={item.m_IDModule} data-name={item.m_Name}>
+                                              {item.m_Name}
+                                            </a>
+                                          </td>
+                                          <td>{toRupiah(item.m_Budget)}</td>
+                                          <td>{item.m_IsDone ? <span class="badge badge-success">Done</span> : <span class="badge badge-danger">Undone</span>}</td>
+
+                                          <td>
+                                            {
+                                              item.m_IsDone === 0 &&
+                                              <a title="Set to done" onClick={this.setToDone} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
+                                                <i data-id={item.m_IDModule} class="fa fa-check"></i>
+                                              </a>
+                                            }
+
+                                            {
+                                              item.m_IsDone === 1 &&
+                                              <a title="Set to progress" onClick={this.setToProgress} data-id={item.m_IDModule} class="btn btn-sm btn-danger mr-2">
+                                                <i data-id={item.m_IDModule} class="fa fa-history"></i>
+                                              </a>
+                                            }
+                                          </td>
+                                          <td class="text-center">
+                                            {
+                                              item.m_Assign &&
+                                              <ul class="list-inline">
+                                                <li class="list-inline-item">
+                                                  <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                                </li>
+                                              </ul>
+                                            }
+
+                                            {
+                                              !item.m_Assign &&
+                                              <a title="See all candidate" onClick={this.showCandidate} data-name={item.m_Name} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
+                                                <i data-id={item.m_IDModule} data-name={item.m_Name} class="fa fa-users"></i>
+                                              </a>
+                                            }
+                                          </td>
+                                          <td class="text-center">
+                                            <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-redo mr-2"></i>
+                                            <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
+                                            <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
+                                          </td>
+                                        </tr>
+                                      ))
+                                    }
+
+                                  </tbody>
+                                </table>
+
+                                <Modal show={this.state.isModule} onHide={this.closeModule.bind(this)} animation={false}>
+                                  <div class="card" style={{marginBottom: 0}}>
+                                    <div class="card-body login-card-body">
+
+                                      <form onSubmit={this.saveModule}>
+                                        <div class="form-group mb-3">
+                                          <label>Name</label>
+                                          <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
+                                        </div>
+                                        <div class="form-group mb-3">
+                                          <label>Budget</label>
+                                          <input onChange={e => this.setState({ budget: e.target.value })} value={this.state.budget} type="number" class="form-control" placeholder="Budget" />
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                          <label>Assign to</label>
+                                          <Select onChange={e => this.setState({ assign: e })} value={this.state.assign} options={this.state.listTalents} />
+                                        </div>
+                                        <div class="form-group" style={{marginBottom: 0}}>
+                                          <button type="submit" class="btn btn-primary float-right">Save</button>
+                                          <button onClick={this.closeModule.bind(this)} type="button" class="btn btn-default">Close</button>
+                                        </div>
+                                      </form>
+
+                                    </div>
+                                  </div>
+                                </Modal>
+
+                                <Modal dialogClassName="modal-lg" show={this.state.isTask} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
+                                  <div class="card" style={{marginBottom: 0}}>
+                                    <div class="card-body login-card-body row">
+                                      <div class="col-sm-12 mb-3 text-center">
+                                        <h4><b>{this.state.name}</b></h4>
+                                      </div>
+
+                                      <div class="col-sm-6">
+                                        <h6>All tasks</h6>
+
+                                        <div class="input-group mt-3">
+                                          <input onChange={e => this.setState({ nameTask: e.target.value })} value={this.state.nameTask} type="text" class="form-control" />
+                                          <span class="input-group-append">
+                                            <button onClick={this.saveTask} type="button" class="btn btn-info btn-flat">Add</button>
+                                          </span>
+                                        </div>
+
+                                        {
+                                          this.state.task.length === 0 && <span>No task available.</span>
+                                        }
+
+
+                                        <ul class="todo-list ui-sortable mt-3" data-widget="todo-list">
+
+                                          {
+                                            this.state.task.map((item,i) => (
+                                              <li class={item.IsDone ? 'done' : ''}>
+                                                <div class="icheck-primary d-inline ml-2">
+                                                  <input onChange={item.IsDone ? this.setTaskToProgress : this.setTaskToDone} type="checkbox" value={item.IDTask} name={`task${i}`} id={`task${i}`} checked={item.IsDone ? 'checked' : ''} />
+                                                  <label for="todoCheck2"></label>
+                                                </div>
+                                                <span class="text ml-3">{item.Name}</span>
+                                                <span onClick={this.deleteTask} data-id={item.IDTask} class="float-right" style={{cursor: 'pointer'}}><i data-id={item.IDTask} class="fa fa-trash"></i></span>
+                                              </li>
+                                            ))
+                                          }
+
+                                        </ul>
+                                      </div>
+
+                                      <div class="col-sm-6">
+                                        <h6>Conversations</h6>
+                                        <div class="p-0">
+
+                                          <div class="card-footer card-comments">
+
+                                          {
+                                            this.state.convers.map((item,i) => (
+                                              <div class="card-comment">
+                                                <img title={item.Name} class="img-circle img-sm" src={`https://ui-avatars.com/api/?name=${item.Name}`} alt="Avatar" />
+
+                                                <div class="comment-text">
+                                                  <span class="username">
+                                                    {item.Name}
+                                                    <span class="text-muted float-right">{moment(item.CreateAt).format('DD/MM/YYYY HH:mm')}</span>
+                                                  </span>
+                                                  {item.Description}
+                                                </div>
+                                              </div>
+                                            ))
+                                          }
+
+                                          </div>
+
+                                          <div class="card-footer">
+                                            <form onSubmit={this.sendKomentar}>
+                                              <img title={this.state.nameId} alt="Avatar" class="img-fluid img-circle img-sm" src={`https://ui-avatars.com/api/?name=${this.state.nameId}`} />
+
+                                              <div class="img-push">
+                                                <input required onChange={e => this.setState({ komentar: e.target.value })} value={this.state.komentar} type="text" class="form-control form-control-sm" placeholder="Press enter to post comment" />
+                                              </div>
+                                            </form>
+                                          </div>
+
+                                        </div>
+                                      </div>
+
+                                    </div>
+                                  </div>
+                                </Modal>
+
+                                <Modal show={this.state.isCandidate} onHide={() => this.closeCandidate()} animation={false}>
+                                  <div class="card" style={{marginBottom: 0}}>
+                                    <div class="card-body login-card-body">
+                                      <h4>Candidate on <b>{this.state.nameModul}</b></h4>
+
+                                      <table class="table projects mt-3">
+                                        {
+                                          this.state.listCandidate.length === 0 && <span>No candidates yet</span>
+                                        }
+                                        {
+                                          this.state.listCandidate.map(item => (
+                                            <tr key={item.pmc_IDCandidate}>
+                                              <td width="20px">
+                                                #{item.pmc_IDCandidate}
+                                              </td>
+                                              <td width="20px">
+                                                <ul class="list-inline">
+                                                    <li class="list-inline-item">
+                                                        <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                                    </li>
+                                                </ul>
+                                              </td>
+                                              <td>{item.u_Name}</td>
+                                              <td class="text-right" width="30px">
+                                                <i onClick={this.updateAssignModule} data-talent={item.pmc_UserID} data-id={item.pmc_IDCandidate} style={{cursor: 'pointer'}} class="fa fa-check"></i>
+                                              </td>
+                                            </tr>
+                                          ))
+                                        }
+                                      </table>
+
+                                    </div>
+                                  </div>
+                                </Modal>
+
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                          <div class="col-12">
+                            <h4>
+                              Attachments
+                              <button onClick={e => this.setState({ isFiles: true })} class="btn btn-sm btn-primary float-right">Add</button>
+                            </h4>
+
+                            <ul class="list-unstyled mt-3">
                               {
                                 this.state.files.map(item => (
                                   <li>
@@ -865,7 +840,6 @@ class ProjectDetail extends React.Component{
                                   </li>
                                 ))
                               }
-
                             </ul>
 
                             <Modal show={this.state.isFiles} onHide={() => this.setState({ isFiles: false })} animation={false}>
@@ -882,11 +856,116 @@ class ProjectDetail extends React.Component{
                               </div>
                             </Modal>
 
-                            <div class="mt-2 mb-3">
-                              <button onClick={e => this.setState({ isFiles: true })} class="btn btn-sm btn-primary mr-2">Add file</button>
-                            </div>
                           </div>
                         </div>
+
+                        <div class="row mt-3">
+                          <div class="col-12">
+                            <h4>Activity</h4>
+
+                            <span>Under Construction</span>
+
+                            {
+                              /**
+
+                            <div class="post">
+                              <div class="user-block">
+                                <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" />
+                                <span class="username">
+                                                              <a href="#">Jonathan Burke Jr.</a>
+                                                          </span>
+                                <span class="description">Shared publicly - 7:45 PM today</span>
+                              </div>
+                              <p>
+                                Lorem ipsum represents a long-held tradition for designers, typographers and the like. Some people hate it and argue for its demise, but others ignore.
+                              </p>
+
+                              <p>
+                                <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 1 v2</a>
+                              </p>
+                            </div>
+
+                            <div class="post clearfix">
+                              <div class="user-block">
+                                <img class="img-circle img-bordered-sm" src="/dist/img/user7-128x128.jpg" alt="User Image" />
+                                <span class="username">
+                                                              <a href="#">Sarah Ross</a>
+                                                          </span>
+                                <span class="description">Sent you a message - 3 days ago</span>
+                              </div>
+                              <p>
+                                Lorem ipsum represents a long-held tradition for designers, typographers and the like. Some people hate it and argue for its demise, but others ignore.
+                              </p>
+                              <p>
+                                <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 2</a>
+                              </p>
+                            </div>
+
+                            <div class="post">
+                              <div class="user-block">
+                                <img class="img-circle img-bordered-sm" src="/dist/img/user1-128x128.jpg" alt="user image" />
+                                <span class="username">
+                                                              <a href="#">Jonathan Burke Jr.</a>
+                                                          </span>
+                                <span class="description">Shared publicly - 5 days ago</span>
+                              </div>
+                              <p>
+                                Lorem ipsum represents a long-held tradition for designers, typographers and the like. Some people hate it and argue for its demise, but others ignore.
+                              </p>
+
+                              <p>
+                                <a href="#" class="link-black text-sm"><i class="fas fa-link mr-1"></i> Demo File 1 v1</a>
+                              </p>
+                            </div>
+
+                              */
+                            }
+
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div class="col-sm-4">
+
+                    <div class="card card-primary card-outline direct-chat direct-chat-primary">
+                      <div class="card-header">
+                        <h3 class="text-primary" style={{margin: 0}}>Direct Chat</h3>
+                      </div>
+
+                      <div class="card-body">
+                        <div class="direct-chat-messages" style={{height: '400px'}}>
+
+                          {
+                            this.state.chatList.map((item, i) => (
+                              <div class={`direct-chat-msg ${item.pa_UserID == this.state.userId ? 'right' : ''}`} key={i+item.pa_IDActivity}>
+                                <div class="direct-chat-infos clearfix">
+                                  <span class={`direct-chat-name float-${item.pa_UserID == this.state.userId ? 'right' : 'left'}`}>{item.u_Name}</span>
+                                  <span class={`direct-chat-timestamp float-${item.pa_UserID == this.state.userId ? 'left' : 'right'}`}>{moment(item.pa_CreateAt).format('DD MMM YYYY HH:mm')}</span>
+                                </div>
+                                <img title={item.u_Name} alt="Avatar" class="direct-chat-img" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                <div class="direct-chat-text">
+                                  {item.pa_Description}
+                                </div>
+                              </div>
+                            ))
+                          }
+
+                        </div>
+                      </div>
+
+                      <div class="card-footer">
+                        <form onSubmit={this.sendChat}>
+                          <div class="input-group">
+                            <input onChange={e => this.setState({ chat: e.target.value })} value={this.state.chat} type="text" name="message" placeholder="Type Message ..." class="form-control" />
+                            <span class="input-group-append">
+                              <button type="submit" class="btn btn-primary">Send</button>
+                            </span>
+                          </div>
+                        </form>
                       </div>
                     </div>
 

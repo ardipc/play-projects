@@ -9,7 +9,7 @@ class ProjectsEdit extends React.Component{
         return(
             <div class="content-wrapper">
                 <div class="content-header">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row mb-2">
                     <div class="col-sm-6">
                         <h1 class="m-0"> Welcome to <b>PlayProjects</b></h1>
@@ -25,8 +25,8 @@ class ProjectsEdit extends React.Component{
                 </div>
 
                 <div class="content">
-                    
-                    <div class="container">
+
+                    <div class="container-fluid">
 
                     <div class="row">
                     <div class="col-md-6">
@@ -192,7 +192,7 @@ class ProjectsEdit extends React.Component{
                     </div>
 
                 </div>
-                
+
                 </div>
             </div>
         )
