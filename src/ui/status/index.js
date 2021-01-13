@@ -76,7 +76,7 @@ class Status extends React.Component {
         return (
             <div class="content-wrapper">
                 <div class="content-header">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row mb-2">
                     <div class="col-sm-6">
                         <h1 class="m-0">Project status</h1>
@@ -92,7 +92,7 @@ class Status extends React.Component {
                 </div>
 
                 <div class="content">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row">
 
                     <div class="col-sm-4">
@@ -157,7 +157,7 @@ class Status extends React.Component {
                 </div>
 
             </div>
-    
+
         )
     }
 }

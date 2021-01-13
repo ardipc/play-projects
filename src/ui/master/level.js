@@ -80,7 +80,7 @@ class UserLevel extends React.Component {
       <div class="content-wrapper">
 
         <div class="content-header">
-          <div class="container">
+          <div class="container-fluid">
             <div class="row mb-2">
               <div class="col-sm-6">
                 <h1 class="m-0">User Level</h1>
@@ -96,7 +96,7 @@ class UserLevel extends React.Component {
         </div>
 
         <div class="content">
-          <div class="container">
+          <div class="container-fluid">
             <div class="row">
 
               <div class="col-sm-4">
@@ -159,7 +159,7 @@ class UserLevel extends React.Component {
         </div>
 
       </div>
-    
+
     )
   }
 }

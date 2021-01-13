@@ -19,7 +19,7 @@ class Admins extends React.Component {
 
         isModal: false,
     }
- 
+
     selectAdmins = e => {
         e.preventDefault();
         let IDUser = e.target.getAttribute('data-id');
@@ -88,14 +88,14 @@ class Admins extends React.Component {
                 this.setState({ list: res.data})
             })
         }
-    
+
 
 
     render(){
         return(
             <div class="content-wrapper">
                 <div class="content-header">
-                    <div class="container">
+                    <div class="container-fluid">
                         <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">Admins</h1>
@@ -111,7 +111,7 @@ class Admins extends React.Component {
                     </div>
 
                     <div class="content">
-                    <div class="container">
+                    <div class="container-fluid">
                         <div class="row">
 
                         <div class="col-sm-12">
@@ -170,8 +170,8 @@ class Admins extends React.Component {
                                     ))
                                     }
                                 </tbody>
-                                        
-                                
+
+
                                 </table>
                             </div>
                             </div>
@@ -223,7 +223,7 @@ class Admins extends React.Component {
                     </div>
 
                 </div>
-    
+
         )
     }
 }

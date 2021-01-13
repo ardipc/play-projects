@@ -121,7 +121,7 @@ class LayoutNav extends React.Component {
 
     return (
       <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-        <div class="container">
+        <div class="container-fluid">
           <a href="/" class="navbar-brand">
             <img src="/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style={{opacity: '.8'}} />
             <span class="brand-text font-weight-light">&nbsp;PlayProjects</span>
@@ -133,9 +133,7 @@ class LayoutNav extends React.Component {
 
           <div class="collapse navbar-collapse order-3" id="navbarCollapse">
             <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-              </li>
+
               <li class="nav-item">
                 <Link to="/" class="nav-link">Beranda</Link>
               </li>
@@ -294,6 +292,10 @@ class LayoutNav extends React.Component {
           </Modal>
 
           <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
+
+            <li class="nav-item">
+              <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
 
             {
               !this.state.checkLogin &&

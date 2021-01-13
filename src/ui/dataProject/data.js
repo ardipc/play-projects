@@ -12,15 +12,15 @@ class DataProject extends React.Component{
     state = {
         name: JSON.parse(localStorage.getItem('user')).Name,
         level: JSON.parse(localStorage.getItem('user')).LevelID,
-    
+
         list: [],
-    
+
     }
 
     componentDidMount() {
         this.fetchProjects()
       }
-    
+
       fetchProjects() {
         let url = `${API_URL}/api/project?_sort=-IDProject`;
         axios.get(url).then(res => {
@@ -33,7 +33,7 @@ class DataProject extends React.Component{
       <div class="content-wrapper">
 
         <div class="content-header">
-          <div class="container">
+          <div class="container-fluid">
             <div class="row mb-2">
               <div class="col-sm-6">
                 <h1 class="m-0"> Welcome back <b>{this.state.name}</b></h1>
@@ -49,7 +49,7 @@ class DataProject extends React.Component{
         </div>
 
         <div class="content">
-          <div class="container">
+          <div class="container-fluid">
             <div class="row">
 
               <div class="col-sm-12">

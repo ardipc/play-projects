@@ -137,7 +137,7 @@ class HomeIndex extends React.Component {
       <div class="content-wrapper">
 
         <div class="content-header">
-          <div class="container">
+          <div class="container-fluid">
             <div class="row mb-2">
               <div class="col-sm-6">
               {
@@ -160,7 +160,7 @@ class HomeIndex extends React.Component {
         </div>
 
         <div class="content">
-          <div class="container">
+          <div class="container-fluid">
             <div class="row">
 
               <div class="col-lg-3 col-6">
