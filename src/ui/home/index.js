@@ -9,6 +9,19 @@ import { Modal, Button } from 'react-bootstrap';
 import moment from 'moment-timezone'
 import { toast } from 'react-toastify'
 
+import { connect } from 'react-redux'
+import { fetchMyUser } from '../../actions/myUser'
+
+const mapStateToProps = (state) => ({
+  loading: state.myUser.loading,
+  myUser: state.myUser.user,
+  hasErrors: state.myUser.hasErrors
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchMyUser: () => dispatch(fetchMyUser())
+})
+
 class HomeIndex extends React.Component {
 
   state = {
@@ -74,6 +87,8 @@ class HomeIndex extends React.Component {
     this.fetchUser()
     this.fetchModule()
     this.fetchCountModule()
+
+    this.props.fetchMyUser()
   }
 
   fetchProjects() {
@@ -132,6 +147,7 @@ class HomeIndex extends React.Component {
   render() {
 
     console.log('state: ', this.state)
+    console.log('props: ', this.props);
 
     return (
       <div class="content-wrapper">
@@ -396,4 +412,4 @@ class HomeIndex extends React.Component {
 
 }
 
-export default HomeIndex;
+export default connect(mapStateToProps, mapDispatchToProps)(HomeIndex);

@@ -30,13 +30,48 @@ import Jobs from '../ui/jobs/index';
 
 import NotFound from '../ui/notfound/index';
 
+{/** ADMIN */}
+const menuAdmin = [
+  {label: 'Projects', path: '/projects', component: ProjectsIndex },
+  {label: 'Projects', path: '/projects-detail/:projectId', component: ProjectDetail },
+  {label: 'Projects', path: '/projects-buat', component: ProjectsBuat },
+  {label: 'Projects', path: '/projects-edit', component: ProjectEdit },
+  {label: 'Projects', path: '/data-project', component: DataProject },
+
+  {label: 'User', path: '/user-level', component: UserLevel },
+  {label: 'User', path: '/project-status', component: Status },
+
+  {label: 'Clients', path: '/clients', component: Clients },
+  {label: 'Talents', path: '/talents', component: Talents },
+  {label: 'Admins', path: '/admins', component: Admins },
+];
+
+{/** TALENT */}
+const menuTalent = [
+  {label: 'Jobs', path: '/jobs', component: Jobs },
+];
+
+{/** CLIENT */}
+const menuClient = [];
+
 class Private extends React.Component {
 
   state = {
-
+    level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
   }
 
   render() {
+    let menu = [];
+    if(this.state.level === 1) {
+      menu = menuAdmin
+    }
+    else if(this.state.level === 2) {
+      menu = menuTalent
+    }
+    else {
+      menu = menuClient
+    }
+
     return (
       <Router>
         <LayoutNav changeToPrivate={this.props.changeToPrivate} />
@@ -44,32 +79,17 @@ class Private extends React.Component {
 
         <Switch>
           <Route path="/" exact><HomeIndex /></Route>
-
-          {/** ADMIN */}
-          <Route path="/projects" component={ProjectsIndex} />
-          <Route path="/projects-detail/:projectId" component={ProjectDetail} />
-          <Route path="/projects-buat" component={ProjectsBuat} />
-          <Route path="/projects-edit"><ProjectEdit /></Route>
-          <Route path="/data-project"><DataProject /></Route>
-
-          <Route path="/user-level"><UserLevel /></Route>
-          <Route path="/project-status"><Status /></Route>
-
-
-          <Route path="/clients"><Clients /></Route>
-          <Route path="/talents"><Talents /></Route>
-          <Route path="/admins"><Admins /></Route>
-
           <Route path="/profil"><Profil /></Route>
-          <Route path="/jobs"><Jobs /></Route>
 
-          {/** CLIENT */}
-
-          {/** TALENT */}
+          {
+            menu.map((item,i) => (
+              <Route path={item.path} component={item.component} />
+            ))
+          }
 
           <Route><NotFound /></Route>
         </Switch>
-        
+
 
         <LayoutFoot />
       </Router>
