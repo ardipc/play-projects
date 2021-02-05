@@ -1,5 +1,13 @@
 import './App.css';
 import React from 'react';
+
+import { createStore, applyMiddleware} from 'redux'
+import { Provider } from 'react-redux'
+import thunk from 'redux-thunk'
+import { composeWithDevTools } from 'redux-devtools-extension'
+
+import rootReducer from './reducers'
+
 import { SOCKET_URL, SOCKET_PREFIX } from './config/env';
 
 import { ToastContainer } from 'react-toastify';
@@ -11,6 +19,8 @@ import SocketContext from './helper/socket';
 
 import Public from './routes/public';
 import Private from './routes/private';
+
+const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk)))
 
 class App extends React.Component {
 
@@ -46,10 +56,12 @@ class App extends React.Component {
     const Main = ({isPrivate}) => isPrivate ? <Private changeToPrivate={this.changeToPrivate} /> : <Public changeToPrivate={this.changeToPrivate} />;
 
     return (
-      <SocketContext.Provider value={socket}>
-        <Main isPrivate={this.state.isLogin} />
-        <ToastContainer autoClose={2000} />
-      </SocketContext.Provider>
+      <Provider store={store}>
+        <SocketContext.Provider value={socket}>
+          <Main isPrivate={this.state.isLogin} />
+          <ToastContainer autoClose={2000} />
+        </SocketContext.Provider>
+      </Provider>
     );
   }
 

@@ -11,6 +11,19 @@ import { Modal, Button } from 'react-bootstrap';
 
 import Select from 'react-select'
 
+import { connect } from 'react-redux'
+import { fetchMyUser } from '../../actions/myUser'
+
+const stateToProps = (state) => ({
+  myUser: state.myUser.user,
+  loading: state.myUser.loading,
+  hasErrors: state.myUser.hasErrors
+})
+
+const dispatchToProps = (dispatch) => ({
+  fetchMyUser: () => dispatch(fetchMyUser())
+})
+
 class ProjectsIndex extends React.Component {
 
   state = {
@@ -127,6 +140,8 @@ class ProjectsIndex extends React.Component {
     this.fetchProjects()
     this.fetchUser()
     this.fetchStatus()
+
+    this.props.fetchMyUser()
   }
 
   clearForm() {
@@ -180,6 +195,7 @@ class ProjectsIndex extends React.Component {
   render() {
 
     console.log('state: ', this.state)
+    console.log('props: ', this.props)
 
     return (
       <div class="content-wrapper">
@@ -189,6 +205,7 @@ class ProjectsIndex extends React.Component {
             <div class="row mb-2">
               <div class="col-sm-6">
                 <h1 class="m-0"> Welcome back <b>{this.state.name}</b></h1>
+                <p>{this.props.myUser.title}</p>
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -342,4 +359,4 @@ class ProjectsIndex extends React.Component {
 
 }
 
-export default ProjectsIndex;
+export default connect(stateToProps, dispatchToProps)(ProjectsIndex);
