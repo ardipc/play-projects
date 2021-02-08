@@ -27,71 +27,74 @@ class LayoutSidebar extends React.Component {
           </div>
 
           <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            {
+              localStorage.getItem('user') && this.state.level === 1 &&
+              <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-              <li class="nav-header">MASTER DATA</li>
-              <li class="nav-item">
-                <Link to="/user-level" class="nav-link">
-                  <i class="nav-icon fas fa-th"></i>
-                  <p>
-                    User Level
-                  </p>
-                </Link>
-              </li>
-              <li class="nav-item">
-                <Link to="/project-status" class="nav-link">
-                  <i class="nav-icon fas fa-th-list"></i>
-                  <p>
-                    Project Status
-                  </p>
-                </Link>
-              </li>
+                <li class="nav-header">MASTER DATA</li>
+                <li class="nav-item">
+                  <Link to="/user-level" class="nav-link">
+                    <i class="nav-icon fas fa-th"></i>
+                    <p>
+                      User Level
+                    </p>
+                  </Link>
+                </li>
+                <li class="nav-item">
+                  <Link to="/project-status" class="nav-link">
+                    <i class="nav-icon fas fa-th-list"></i>
+                    <p>
+                      Project Status
+                    </p>
+                  </Link>
+                </li>
 
-              <li class="nav-header">USERS</li>
-              <li class="nav-item">
-                <Link to="/clients" class="nav-link">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p>
-                    Clients
-                  </p>
-                </Link>
-              </li>
-              <li class="nav-item">
-                <Link to="/talents" class="nav-link">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p>
-                    Talents
-                  </p>
-                </Link>
-              </li>
-              <li class="nav-item">
-                <Link to="/admins" class="nav-link">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p>
-                    Admins
-                  </p>
-                </Link>
-              </li>
+                <li class="nav-header">USERS</li>
+                <li class="nav-item">
+                  <Link to="/clients" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                      Clients
+                    </p>
+                  </Link>
+                </li>
+                <li class="nav-item">
+                  <Link to="/talents" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                      Talents
+                    </p>
+                  </Link>
+                </li>
+                <li class="nav-item">
+                  <Link to="/admins" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                      Admins
+                    </p>
+                  </Link>
+                </li>
 
-              <li class="nav-header">PROJECT</li>
-              <li class="nav-item">
-                <Link to="/createProject" class="nav-link">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p>
-                    Create Project
-                  </p>
-                </Link>
-              </li>
-              <li class="nav-item">
-                <Link to="/DataProject" class="nav-link">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p>
-                    Data Project
-                  </p>
-                </Link>
-              </li>
+                <li class="nav-header">PROJECT</li>
+                <li class="nav-item">
+                  <Link to="/createProject" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                      Create Project
+                    </p>
+                  </Link>
+                </li>
+                <li class="nav-item">
+                  <Link to="/DataProject" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                      Data Project
+                    </p>
+                  </Link>
+                </li>
 
-            </ul>
+              </ul>
+            }
           </nav>
         </div>
       </aside>
