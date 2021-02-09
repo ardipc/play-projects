@@ -59,6 +59,8 @@ class ProjectDetail extends React.Component{
 
       chat: '',
       chatList: [],
+
+      desc: ''
     }
 
     setToDone = e => {
@@ -306,27 +308,38 @@ class ProjectDetail extends React.Component{
     }
 
     updateStatusProject = e => {
-      let form = {
-        StatusID: e.value
-      }
+      if(this.state.levelId === 1) {
 
-      let url = `${API_URL}/api/project/${this.state.projectId}`;
-      axios.patch(url, form).then(res => {
-        toast.success(`Status project updated.`);
-        this.props.socket.emit('request', {event: 'project'})
-      })
+        let form = {
+          StatusID: e.value
+        }
+
+        let url = `${API_URL}/api/project/${this.state.projectId}`;
+        axios.patch(url, form).then(res => {
+          toast.success(`Status project updated.`);
+          this.props.socket.emit('request', {event: 'project'})
+        })
+      }
+      else {
+        toast.info(`Anda siapa mau mengubah status project, hehehee`)
+      }
     }
 
     updateLeaderProject = e => {
-      let form = {
-        Leader: e.value
-      }
+      if(this.state.levelId === 1) {
+        let form = {
+          Leader: e.value
+        }
 
-      let url = `${API_URL}/api/project/${this.state.projectId}`;
-      axios.patch(url, form).then(res => {
-        toast.success(`Leader project updated.`);
-        this.props.socket.emit('request', {event: 'project'})
-      })
+        let url = `${API_URL}/api/project/${this.state.projectId}`;
+        axios.patch(url, form).then(res => {
+          toast.success(`Leader project updated.`);
+          this.props.socket.emit('request', {event: 'project'})
+        })
+      }
+      else {
+        toast.info(`Anda siapa mau mengubah status project, hehehee`)
+      }
     }
 
     sendChat = e => {
@@ -438,7 +451,7 @@ class ProjectDetail extends React.Component{
             let leader = this.state.listTalents.filter(item => item.value === data[0].p_Leader);
             console.log('leader: ', leader)
 
-            this.setState({ project: data[0], status: status[0], leader: leader[0] })
+            this.setState({ project: data[0], status: status[0], leader: leader[0], desc: data[0].p_Description })
           }
         })
       })
@@ -507,6 +520,22 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    updateDesc = e => {
+      if(this.state.levelId === 1) {
+        let form = {
+          Description: this.state.desc
+        }
+        let url = `${API_URL}/api/project/${this.state.projectId}`
+        axios.patch(url, form).then(res => {
+          toast.success(`Description updated`)
+          this.fetchProjectsDetail(this.state.projectId)
+        })
+      }
+      else {
+        toast.info(`Anda siapa mau mengubah status project, hehehee`)
+      }
+    }
+
     render(){
 
         console.log('state: ', this.state)
@@ -547,25 +576,21 @@ class ProjectDetail extends React.Component{
                         <div class="row">
 
                           <div class="col-12 col-sm-12">
-                            <p class="text-sm" style={{border: '1px solid #e9e9e9', padding: '8px'}}>
-                              {this.state.project.p_Description}
+                            <p class="text-sm"><b>Description</b>
+                              <textarea onChange={e => this.setState({ desc: e.target.value })} onBlur={this.updateDesc} class="form-control mb-2" rows="4" value={this.state.desc} />
                             </p>
                           </div>
 
                           <div class="col-12 col-sm-6">
-                            <div class="text-muted">
-                              <p class="text-sm"><b>Leader</b>
-                                <Select onChange={this.updateLeaderProject} value={this.state.leader} options={this.state.listTalents} />
-                              </p>
-                            </div>
+                            <p class="text-sm"><b>Leader</b>
+                              <Select onChange={this.updateLeaderProject} value={this.state.leader} options={this.state.listTalents} />
+                            </p>
                           </div>
 
                           <div class="col-12 col-sm-6">
-                            <div class="text-muted">
-                              <p class="text-sm"><b>Client</b>
-                                <input class="form-control" value={this.state.project.u_Name} />
-                              </p>
-                            </div>
+                            <p class="text-sm"><b>Client</b>
+                              <input class="form-control" value={this.state.project.u_Name} />
+                            </p>
                           </div>
 
                           <div class="col-12 col-sm-3">
@@ -610,7 +635,10 @@ class ProjectDetail extends React.Component{
                             <div class="col-12">
                                 <h4>
                                   Modules
-                                  <button onClick={e => this.setState({ isModule: true })} class="btn btn-sm btn-primary float-right">Add</button>
+                                  {
+                                    this.state.levelId === 1 &&
+                                    <button onClick={e => this.setState({ isModule: true })} class="btn btn-sm btn-primary float-right">Add</button>
+                                  }
                                 </h4>
 
                                 <table class="table table-hover projects mt-3">
@@ -620,23 +648,23 @@ class ProjectDetail extends React.Component{
                                         <tr>
                                           <td>#{item.m_IDModule}</td>
                                           <td>
-                                            <a href="#" onClick={this.selectModuleTask} data-id={item.m_IDModule} data-name={item.m_Name}>
+                                            <Link data-id={item.m_IDModule} data-name={item.m_Name}>
                                               {item.m_Name}
-                                            </a>
+                                            </Link>
                                           </td>
                                           <td>{toRupiah(item.m_Budget)}</td>
-                                          <td>{item.m_IsDone ? <span class="badge badge-success">Done</span> : <span class="badge badge-danger">Undone</span>}</td>
+                                          <td>{item.m_IsDone ? <span class="badge badge-success">DONE</span> : <span class="badge badge-danger">WIP</span>}</td>
 
                                           <td>
                                             {
-                                              item.m_IsDone === 0 &&
+                                              item.m_IsDone === 0 && this.state.userId === item.m_Assign &&
                                               <a title="Set to done" onClick={this.setToDone} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
                                                 <i data-id={item.m_IDModule} class="fa fa-check"></i>
                                               </a>
                                             }
 
                                             {
-                                              item.m_IsDone === 1 &&
+                                              item.m_IsDone === 1 && this.state.levelId === 1 &&
                                               <a title="Set to progress" onClick={this.setToProgress} data-id={item.m_IDModule} class="btn btn-sm btn-danger mr-2">
                                                 <i data-id={item.m_IDModule} class="fa fa-history"></i>
                                               </a>
@@ -648,6 +676,10 @@ class ProjectDetail extends React.Component{
                                               <ul class="list-inline">
                                                 <li class="list-inline-item">
                                                   <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
+                                                  {
+                                                    this.state.levelId === 1 &&
+                                                    <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-times ml-2"></i>
+                                                  }
                                                 </li>
                                               </ul>
                                             }
@@ -660,9 +692,13 @@ class ProjectDetail extends React.Component{
                                             }
                                           </td>
                                           <td class="text-center">
-                                            <i title={`Remove assign talents from module.`} onClick={this.removeAssignModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-redo mr-2"></i>
-                                            <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
-                                            <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
+                                            {
+                                              this.state.levelId === 1 &&
+                                              <span>
+                                                <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
+                                                <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
+                                              </span>
+                                            }
                                           </td>
                                         </tr>
                                       ))
@@ -832,7 +868,10 @@ class ProjectDetail extends React.Component{
                                     <div>
                                       <i class={`far fa-fw fa-${item.Icon}`}></i> {item.FileName}
 
-                                      <i style={{cursor: 'pointer'}} onClick={this.deleteFile} data-id={item.IDFiles} class="fa fa-trash float-right"></i>
+                                      {
+                                        this.state.levelId === 1 &&
+                                        <i style={{cursor: 'pointer'}} onClick={this.deleteFile} data-id={item.IDFiles} class="fa fa-trash float-right"></i>
+                                      }
                                       <a href={`${API_URL}/download?name=${item.Url}`} target="_blank" class="btn-link text-secondary">
                                         <i class="fa fa-download float-right mr-2"></i>
                                       </a>
@@ -859,11 +898,13 @@ class ProjectDetail extends React.Component{
                           </div>
                         </div>
 
+                        {/**
                         <div class="row mt-3">
                           <div class="col-12">
                             <h4>Activity</h4>
 
                             <span>Under Construction</span>
+                            */}
 
                             {
                               /**
@@ -921,8 +962,10 @@ class ProjectDetail extends React.Component{
                               */
                             }
 
+                            { /*
                           </div>
                         </div>
+                        */ }
 
                       </div>
                     </div>

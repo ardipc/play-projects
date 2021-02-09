@@ -239,7 +239,7 @@ class HomeIndex extends React.Component {
               <div class="col-sm-6">
                 <div class="card">
                   <div class="card-header">
-                    <h3 class="card-title">Jobs Undone</h3>
+                    <h3 class="card-title">Works In Progress</h3>
 
                     <div class="card-tools">
                       {
@@ -261,7 +261,7 @@ class HomeIndex extends React.Component {
                                 <th class="text-center">Action</th>
                                 <th>Budget</th>
                                 <th>Client</th>
-                                <th class="text-center">Task</th>
+                                {/*<th class="text-center">Task</th>*/}
                             </tr>
                         </thead>
                         <tbody>
@@ -270,9 +270,9 @@ class HomeIndex extends React.Component {
                               <tr>
                                   <td>#{item.IDModule}</td>
                                   <td>
-                                    <a href="#" onClick={this.selectTask} data-id={item.IDModule} data-project={item.IDProject} data-name={item.pm_Name}>
+                                    <Link data-id={item.IDModule} data-project={item.IDProject} data-name={item.pm_Name}>
                                       {item.pm_Name}
-                                    </a>
+                                    </Link>
                                     <br/>
                                     <small>
                                       Project on <Link to={`/projects-detail/${item.IDProject}`}>{item.p_Name}</Link>
@@ -293,9 +293,11 @@ class HomeIndex extends React.Component {
                                           </li>
                                       </ul>
                                   </td>
+                                  {/*
                                   <td class="project-state">
                                       <span class="badge badge-info">{item.t_Count}</span>
                                   </td>
+                                  */}
                               </tr>
                             ))
                           }
@@ -331,7 +333,7 @@ class HomeIndex extends React.Component {
                                 <th>Name</th>
                                 <th>Budget</th>
                                 <th>Client</th>
-                                <th class="text-center">Task</th>
+                                {/*<th class="text-center">Task</th>*/}
                             </tr>
                         </thead>
                         <tbody>
@@ -340,9 +342,9 @@ class HomeIndex extends React.Component {
                               <tr>
                                   <td>#{item.IDModule}</td>
                                   <td>
-                                    <a href="#" onClick={this.selectTask} data-project={item.IDProject} data-id={item.IDModule} data-name={item.pm_Name}>
+                                    <Link data-project={item.IDProject} data-id={item.IDModule} data-name={item.pm_Name}>
                                       {item.pm_Name}
-                                    </a>
+                                    </Link>
                                     <br/>
                                     <small>
                                       Project on <Link to={`/projects-detail/${item.IDProject}`}>{item.p_Name}</Link>
@@ -358,9 +360,11 @@ class HomeIndex extends React.Component {
                                           </li>
                                       </ul>
                                   </td>
+                                  {/*
                                   <td class="project-state">
                                       <span class="badge badge-info">{item.t_Count}</span>
                                   </td>
+                                  */}
                               </tr>
                             ))
                           }
