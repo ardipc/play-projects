@@ -4,6 +4,7 @@ import { Modal } from 'react-bootstrap';
 
 import axios from 'axios';
 import { API_URL, MACHINE } from '../../config/env';
+import { toRupiah } from '../../helper/format'
 
 import moment from 'moment-timezone';
 import { toast } from 'react-toastify';
@@ -21,15 +22,39 @@ class Admins extends React.Component {
       cv: '',
 
       cvTemp: Math.random().toString(36),
+
+      modulDone: [],
+      modulUnDone: [],
+      myBalance: 0,
     }
 
     componentDidMount() {
       this.fetchProfile()
+      this.fetchModule()
+    }
+
+    fetchModule() {
+      let balance = 0;
+      let form = {
+        query: `SELECT pm.IDModule, pm.Name AS pm_Name, pm.Budget, pm.IsDone, pm.Assign, p.IDProject, p.StartDate, p.EndDate, p.Name AS p_Name, p.Client, u.Name AS u_Name, count(pt.IDTask) AS t_Count
+          FROM project_modul pm JOIN project p ON pm.ProjectID = p.IDProject JOIN user u ON p.Client = u.IDUser LEFT JOIN project_task pt ON pm.IDModule = pt.ModuleID
+          WHERE pm.Assign = ?
+          GROUP BY pm.IDModule
+          ORDER BY pm.IDModule DESC`,
+        params: [this.state.userId]
+      };
+      let url = `${API_URL}/dynamic`;
+      axios.post(url, form).then(res => {
+        let undone = res.data.filter(item => item.IsDone === 0);
+        let done = res.data.filter(item => item.IsDone === 1);
+        done.map(item => {
+          balance += item.Budget
+        })
+        this.setState({ modulDone: done, modulUnDone: undone, myBalance: balance })
+      })
     }
 
     fetchProfile() {
-      // let url = `${API_URL}/api/user/${this.state.userId}`
-
       let url = `${API_URL}/api/xjoin`;
         url += `?_join=ua.user_account,_rj,u.user`
         url += `&_on1=(ua.UserID,eq,u.IDUser)`
@@ -182,16 +207,16 @@ class Admins extends React.Component {
 
                           <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
-                              <b>Account</b> <a class="float-right">10</a>
+                              <b>Account</b> <a class="float-right">Setup</a>
                             </li>
                             <li class="list-group-item">
-                              <b>Portofolios</b> <a class="float-right">10</a>
+                              <b>Portofolios</b> <a class="float-right">Setup</a>
                             </li>
                             <li class="list-group-item">
-                              <b>Educations</b> <a class="float-right">12</a>
+                              <b>Educations</b> <a class="float-right">Setup</a>
                             </li>
                             <li class="list-group-item">
-                              <b>Skills</b> <a class="float-right">20</a>
+                              <b>Skills</b> <a class="float-right">Setup</a>
                             </li>
                           </ul>
 
@@ -207,7 +232,7 @@ class Admins extends React.Component {
                         <div class="col-lg-4 col-6">
                           <div class="small-box bg-success">
                             <div class="inner">
-                              <h3>12</h3>
+                              <h3>{toRupiah(this.state.myBalance)}</h3>
                               <p>My Balance</p>
                             </div>
                             <div class="icon">
@@ -219,7 +244,7 @@ class Admins extends React.Component {
                         <div class="col-lg-4 col-6">
                           <div class="small-box bg-info">
                             <div class="inner">
-                              <h3>12</h3>
+                              <h3>{this.state.modulDone.length}</h3>
                               <p>Module Done</p>
                             </div>
                             <div class="icon">
@@ -231,8 +256,8 @@ class Admins extends React.Component {
                         <div class="col-lg-4 col-6">
                           <div class="small-box bg-warning">
                             <div class="inner">
-                              <h3>12</h3>
-                              <p>My Bids</p>
+                              <h3>{this.state.modulUnDone.length}</h3>
+                              <p>Work In Progress</p>
                             </div>
                             <div class="icon">
                               <i class="ion ion-archive"></i>
