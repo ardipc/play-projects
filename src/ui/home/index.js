@@ -41,13 +41,18 @@ class HomeIndex extends React.Component {
     idModul: '',
     nameModul: '',
     listTask: [],
+
+    project: '',
+    price: 0
   }
 
   selectTask = e => {
     e.preventDefault()
     let id = e.target.getAttribute('data-id')
     let name = e.target.getAttribute('data-name')
-    this.setState({ idModul: id, nameModul: name, isTask: true })
+    let project = e.target.getAttribute('data-project')
+    let price = e.target.getAttribute('data-price')
+    this.setState({ idModul: id, nameModul: name, isTask: true, project, price })
     this.fetchTaskByModule(id)
   }
 
@@ -259,7 +264,7 @@ class HomeIndex extends React.Component {
                                 <th>Name</th>
                                 <th>Budget</th>
                                 <th>Client</th>
-                                <th>Task</th>
+                                {/*<th>Task</th>*/}
                             </tr>
                         </thead>
                         <tbody>
@@ -268,7 +273,11 @@ class HomeIndex extends React.Component {
                               <tr>
                                   <td>#{item.IDModule}</td>
                                   <td>
-                                    <a href="#" onClick={this.selectTask} data-id={item.IDModule} data-name={item.pm_Name}>
+                                    <a href="#" onClick={this.selectTask}
+                                      data-id={item.IDModule}
+                                      data-project={item.p_Name}
+                                      data-price={item.Budget}
+                                      data-name={item.pm_Name}>
                                       {item.pm_Name}
                                     </a>
                                     <br/>
@@ -286,9 +295,11 @@ class HomeIndex extends React.Component {
                                           </li>
                                       </ul>
                                   </td>
+                                  {/*
                                   <td class="project-state">
                                       <span class="badge badge-info">{item.t_Count}</span>
                                   </td>
+                                  */}
                               </tr>
                             ))
                           }
@@ -299,24 +310,18 @@ class HomeIndex extends React.Component {
                     <Modal show={this.state.isTask} onHide={() => this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })} animation={false}>
                       <div class="card" style={{marginBottom: 0}}>
                         <div class="card-body login-card-body">
-                          <h4>Task on <b>{this.state.nameModul}</b></h4>
+                          <h4 class="mb-3"><b>{this.state.project}</b></h4>
 
-                          {
-                            this.state.listTask.length === 0 && <span>No task available.</span>
-                          }
-
-                          <table class="table mt-3">
-                            {
-                              this.state.listTask.map(item => (
-                                <tr key={item.IDTask}>
-                                  <td width="20px">
-                                    #{item.IDTask}
-                                  </td>
-                                  <td style={item.IsDone === 1 ? {textDecoration: 'line-through'} : {}}>{item.Name}</td>
-                                </tr>
-                              ))
-                            }
-                          </table>
+                        <table class="table table-bordered">
+                          <tr>
+                            <td width="100px">Module</td>
+                            <td><b>{this.state.nameModul}</b></td>
+                          </tr>
+                          <tr>
+                            <td>Budget</td>
+                            <td><b>{toRupiah(this.state.price)}</b></td>
+                          </tr>
+                        </table>
 
                           {
                             this.state.level === 2 &&

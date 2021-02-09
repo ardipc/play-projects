@@ -273,7 +273,7 @@ class ProjectsIndex extends React.Component {
                                       </ul>
                                   </td>
                                   <td class="project-state">
-                                      <span class="badge badge-info">{item.s_Name}</span>
+                                      <span class={`badge badge-${item.s_Name === "Done" ? "success" : item.s_Name === "Canceled" ? "danger" : item.s_Name === "On Hold" ? "warning" : "primary"}`}>{item.s_Name.toUpperCase()}</span>
                                   </td>
                                   <td class="project-actions text-center">
                                     <i onClick={this.selectProject} data-id={item.p_IDProject} style={{cursor: 'pointer'}} class="fas fa-pencil-alt mr-2"></i>

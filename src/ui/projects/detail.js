@@ -657,7 +657,7 @@ class ProjectDetail extends React.Component{
 
                                           <td>
                                             {
-                                              item.m_IsDone === 0 && this.state.userId === item.m_Assign &&
+                                              item.m_IsDone === 0 && (this.state.userId === item.m_Assign || this.state.levelId === 1) &&
                                               <a title="Set to done" onClick={this.setToDone} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
                                                 <i data-id={item.m_IDModule} class="fa fa-check"></i>
                                               </a>
