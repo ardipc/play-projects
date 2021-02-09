@@ -48,6 +48,7 @@ const menuAdmin = [
 
 {/** TALENT */}
 const menuTalent = [
+  {label: 'Projects', path: '/projects-detail/:projectId', component: ProjectDetail },
   {label: 'Jobs', path: '/jobs', component: Jobs },
 ];
 
