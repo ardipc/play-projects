@@ -22,10 +22,10 @@ export function fetchMyUser() {
     dispatch(getUser())
 
     try{
-      const response = await fetch(`https://jsonplaceholder.typicode.com/posts`)
+      const response = await fetch(`https://type.fit/api/quotes`)
       const data = await response.json()
 
-      dispatch(getUserSuccess(data[0]))
+      dispatch(getUserSuccess(data[Math.floor(Math.random() * 20)]))
     } catch(err) {
       dispatch(getUserError())
     }

@@ -26,11 +26,14 @@ class Admins extends React.Component {
       modulDone: [],
       modulUnDone: [],
       myBalance: 0,
+
+      talent: {}
     }
 
     componentDidMount() {
       this.fetchProfile()
       this.fetchModule()
+      this.fetchUser()
     }
 
     fetchModule() {
@@ -68,6 +71,17 @@ class Admins extends React.Component {
       })
     }
 
+    fetchUser() {
+      let form = {
+        query: `SELECT u.IDUser, u.Name, u.Email, u.LevelID, u.CreateAt, ua.* FROM user u LEFT JOIN user_account ua ON u.IDUser = ua.UserID WHERE u.IDUser = ? ORDER BY u.IDUser DESC`,
+        params: [this.state.userId]
+      }
+      let url = `${API_URL}/dynamic`;
+      axios.post(url, form).then(res => {
+        this.setState({ talent: res.data.length ? res.data[0] : {} })
+      })
+    }
+
     saveProfile = e => {
       e.preventDefault()
       let form = {
@@ -91,6 +105,8 @@ class Admins extends React.Component {
         let url = `${API_URL}/api/user_account/${this.state.idAccount}`
         axios.patch(url, form).then(res => {
           this.fetchProfile()
+          this.fetchUser()
+          toast.success(`Information saved.`)
 
           if(this.state.cv) {
             let form = new FormData();
@@ -114,7 +130,9 @@ class Admins extends React.Component {
 
               let url = `${API_URL}/api/user_account/${this.state.idAccount}`
               axios.patch(url, form).then(res => {
+                this.fetchUser()
                 this.fetchProfile()
+                toast.success(`Curriculum Vitae uploaded.`)
               })
             })
           }
@@ -130,10 +148,11 @@ class Admins extends React.Component {
         }
         let url = `${API_URL}/api/user_account`
         axios.post(url, form).then(res => {
-          console.log(res.data)
 
           let idAccount = res.data.insertId;
+          this.fetchUser()
           this.fetchProfile()
+          toast.success(`Information saved.`)
 
           if(this.state.cv) {
             let form = new FormData();
@@ -155,8 +174,10 @@ class Admins extends React.Component {
                 CV: getFile
               }
               let url = `${API_URL}/api/user_account/${idAccount}`
-              axios.put(url, form).then(res => {
+              axios.patch(url, form).then(res => {
+                this.fetchUser()
                 this.fetchProfile()
+                toast.success(`Curriculum Vitae uploaded.`)
               })
 
             })
@@ -207,20 +228,16 @@ class Admins extends React.Component {
 
                           <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
-                              <b>Account</b> <a class="float-right">Setup</a>
+                              <i class="fa fa-envelope"></i><b> {this.state.talent.Email}</b>
                             </li>
                             <li class="list-group-item">
-                              <b>Portofolios</b> <a class="float-right">Setup</a>
+                              <i class="fa fa-building"></i><b> {this.state.talent.Address ? this.state.talent.Address : '-'}</b>
                             </li>
                             <li class="list-group-item">
-                              <b>Educations</b> <a class="float-right">Setup</a>
-                            </li>
-                            <li class="list-group-item">
-                              <b>Skills</b> <a class="float-right">Setup</a>
+                              <i class="fa fa-stopwatch"></i><b> {moment(this.state.talent.CreateAt).format('DD/MM/YYYY HH:mm')}</b>
                             </li>
                           </ul>
 
-                          <a href="#" class="btn btn-primary btn-block"><b>Follow</b></a>
                         </div>
                       </div>
 

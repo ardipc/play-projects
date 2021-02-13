@@ -9,6 +9,7 @@ import LayoutNav from '../ui/layout/nav';
 import LayoutSidebar from '../ui/layout/sidebar';
 import LayoutFoot from '../ui/layout/foot';
 
+import TalentIndex from '../ui/talent/index';
 import HomeIndex from '../ui/home/index';
 import NotFound from '../ui/notfound/index';
 
@@ -25,7 +26,8 @@ class Public extends React.Component {
         <LayoutSidebar />
 
         <Switch>
-          <Route path="/" exact><HomeIndex /></Route>
+          <Route path="/talents" component={TalentIndex} />
+          <Route path="/" exact component={HomeIndex} />
 
           <Route><NotFound /></Route>
         </Switch>
