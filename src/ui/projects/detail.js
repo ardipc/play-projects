@@ -689,7 +689,7 @@ class ProjectDetail extends React.Component{
                                             }
 
                                             {
-                                              !item.m_Assign &&
+                                              !item.m_Assign && this.state.levelId === 1 &&
                                               <a title="See all candidate" onClick={this.showCandidate} data-name={item.m_Name} data-id={item.m_IDModule} class="btn btn-sm btn-primary mr-2">
                                                 <i data-id={item.m_IDModule} data-name={item.m_Name} class="fa fa-users"></i>
                                               </a>
