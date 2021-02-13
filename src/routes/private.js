@@ -54,7 +54,10 @@ const menuTalent = [
 ];
 
 {/** CLIENT */}
-const menuClient = [];
+const menuClient = [
+  {label: 'Projects', path: '/projects', component: ProjectsIndex },
+  {label: 'Projects', path: '/projects-detail/:projectId', component: ProjectDetail },
+];
 
 class Private extends React.Component {
 

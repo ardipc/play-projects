@@ -31,6 +31,8 @@ class TalentList extends React.Component {
 
     client: [],
     talent: [],
+
+    showImage: this.props.showImage === false ? this.props.showImage : true,
   }
 
   componentDidMount() {
@@ -52,8 +54,8 @@ class TalentList extends React.Component {
 
   render() {
 
-    // console.log('state: ', this.state)
-    // console.log('props: ', this.props);
+    console.log('statetalent: ', this.state)
+    console.log('propstalent: ', this.props);
 
     return (
       <div class="row d-flex align-items-stretch">
@@ -67,18 +69,28 @@ class TalentList extends React.Component {
                 </div>
                 <div class="card-body pt-0">
                   <div class="row">
-                    <div class="col-7">
+                    <div class={`col-${this.state.showImage ? '7' : '12'}`}>
                       <h2 class="lead"><b>{item.Name}</b></h2>
-                      <p class="text-muted text-sm">{item.Headline ? item.Headline.toString().substr(0,70) + '...' : 'Saya talent disini'}</p>
+                      {
+                        this.state.showImage &&
+                        <p class="text-muted text-sm">{item.Headline ? item.Headline.toString().substr(0,70) + '...' : 'Saya talent disini'}</p>
+                      }
                       <ul class="ml-4 mb-0 fa-ul text-muted">
-                        <li class="small"><span class="fa-li"><i class="fas fa-lg fa-building"></i></span> {item.Address ? item.Address : '-'}</li>
+                        {
+                          this.state.showImage &&
+                          <li class="small"><span class="fa-li"><i class="fas fa-lg fa-building"></i></span> {item.Address ? item.Address : '-'}</li>
+                        }
                         <li class="small"><span class="fa-li"><i class="fas fa-lg fa-envelope"></i></span> {item.Email}</li>
                         <li class="small"><span class="fa-li"><i class="fas fa-lg fa-stopwatch"></i></span> {moment(item.CreateAt).format('DD/MM/YYYY HH:mm')}</li>
                       </ul>
                     </div>
-                    <div class="col-5 text-center">
-                      <img title={item.Name} src={`https://ui-avatars.com/api/?name=${item.Name}`} alt="user-avatar" class="img-circle img-fluid" />
-                    </div>
+
+                    {
+                      this.state.showImage &&
+                      <div class="col-5 text-center">
+                        <img title={item.Name} src={`https://ui-avatars.com/api/?name=${item.Name}`} alt="user-avatar" class="img-circle img-fluid" />
+                      </div>
+                    }
                   </div>
                 </div>
                 <div class="card-footer">
