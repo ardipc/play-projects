@@ -91,6 +91,7 @@ class Admins extends React.Component {
         let url = `${API_URL}/api/user_account/${this.state.idAccount}`
         axios.patch(url, form).then(res => {
           this.fetchProfile()
+          toast.success(`Information saved.`)
 
           if(this.state.cv) {
             let form = new FormData();
@@ -115,6 +116,7 @@ class Admins extends React.Component {
               let url = `${API_URL}/api/user_account/${this.state.idAccount}`
               axios.patch(url, form).then(res => {
                 this.fetchProfile()
+                toast.success(`Curriculum Vitae uploaded.`)
               })
             })
           }
@@ -130,10 +132,10 @@ class Admins extends React.Component {
         }
         let url = `${API_URL}/api/user_account`
         axios.post(url, form).then(res => {
-          console.log(res.data)
 
           let idAccount = res.data.insertId;
           this.fetchProfile()
+          toast.success(`Information saved.`)
 
           if(this.state.cv) {
             let form = new FormData();
@@ -157,6 +159,7 @@ class Admins extends React.Component {
               let url = `${API_URL}/api/user_account/${idAccount}`
               axios.put(url, form).then(res => {
                 this.fetchProfile()
+                toast.success(`Curriculum Vitae uploaded.`)
               })
 
             })

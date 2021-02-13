@@ -10,6 +10,7 @@ import LayoutSidebar from '../ui/layout/sidebar';
 import LayoutFoot from '../ui/layout/foot';
 
 import HomeIndex from '../ui/home/index';
+import TalentIndex from '../ui/talent/index';
 import ProjectsIndex from '../ui/projects/index';
 import ProjectsBuat from '../ui/projects/buat';
 import ProjectDetail from '../ui/projects/detail';
@@ -79,8 +80,9 @@ class Private extends React.Component {
         <LayoutSidebar />
 
         <Switch>
+          <Route path="/talents" component={TalentIndex} />
+          <Route path="/profil" component={Profil} />
           <Route path="/" exact><HomeIndex /></Route>
-          <Route path="/profil"><Profil /></Route>
 
           {
             menu.map((item,i) => (

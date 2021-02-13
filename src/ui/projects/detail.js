@@ -35,6 +35,7 @@ class ProjectDetail extends React.Component{
       id: '',
       name: '',
       budget: 0,
+      descModule: '',
       assign: '',
 
       listTalents: [],
@@ -93,7 +94,8 @@ class ProjectDetail extends React.Component{
 
         let form = {
           Name: this.state.name,
-          Budget: this.state.budget
+          Budget: this.state.budget,
+          Description: this.state.descModule
         };
 
         if(this.state.assign) {
@@ -112,6 +114,7 @@ class ProjectDetail extends React.Component{
         let form = {
           Name: this.state.name,
           Budget: this.state.budget,
+          Description: this.state.descModule,
           Assign: this.state.assign.value,
           ProjectID: this.state.projectId
         };
@@ -140,13 +143,14 @@ class ProjectDetail extends React.Component{
       let id      = e.target.getAttribute('data-id')
       let name    = e.target.getAttribute('data-name')
       let budget  = e.target.getAttribute('data-budget')
+      let desc  = e.target.getAttribute('data-desc')
       let assign  = e.target.getAttribute('data-assign')
 
       let lihatTalents = [...this.state.listTalents];
       let getTalents = lihatTalents.filter(item => item.value == parseInt(assign))
 
       this.setState({
-        isModule: true, id: id, name: name, budget: budget, assign: getTalents[0]
+        isModule: true, id: id, name: name, budget: budget, descModule: desc, assign: getTalents[0]
       })
     }
 
@@ -359,7 +363,7 @@ class ProjectDetail extends React.Component{
     }
 
     clearModule() {
-      this.setState({ name: '', budget: '', assign: '' })
+      this.setState({ name: '', budget: '', assign: '', descModule: '' })
     }
 
     closeCandidate() {
@@ -367,7 +371,7 @@ class ProjectDetail extends React.Component{
     }
 
     closeModule() {
-      this.setState({ isModule: false, name: '', budget: '', assign: '', idModul: '' })
+      this.setState({ isModule: false, name: '', budget: '', descModule: '', assign: '', idModul: '' })
     }
 
     clearTask() {
@@ -461,7 +465,7 @@ class ProjectDetail extends React.Component{
       let url = `${API_URL}/api/xjoin`;
         url += `?_join=m.project_modul,_lj,u.user`;
         url += `&_on1=(m.Assign,eq,u.IDUser)`;
-        url += `&_fields=m.IDModule,m.Name,m.Budget,m.Assign,u.Name,m.IsDone`;
+        url += `&_fields=m.IDModule,m.Name,m.Budget,m.Assign,m.Description,u.Name,m.IsDone`;
         url += `&_where=(m.ProjectID,eq,${projectId})`;
       axios.get(url).then(res => {
         let summaryDone = res.data.filter(item => item.m_IsDone === 1);
@@ -695,7 +699,7 @@ class ProjectDetail extends React.Component{
                                             {
                                               this.state.levelId === 1 &&
                                               <span>
-                                                <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
+                                                <i onClick={this.selectModule} data-id={item.m_IDModule} data-name={item.m_Name} data-budget={item.m_Budget} data-desc={item.m_Description} data-assign={item.m_Assign} style={{cursor: 'pointer'}} class="fa fa-edit mr-2"></i>
                                                 <i onClick={this.deleteModule} data-id={item.m_IDModule} style={{cursor: 'pointer'}} class="fa fa-trash"></i>
                                               </span>
                                             }
@@ -715,6 +719,10 @@ class ProjectDetail extends React.Component{
                                         <div class="form-group mb-3">
                                           <label>Name</label>
                                           <input onChange={e => this.setState({ name: e.target.value })} value={this.state.name} type="text" class="form-control" placeholder="Name" />
+                                        </div>
+                                        <div class="form-group mb-3">
+                                          <label>Description</label>
+                                          <textarea onChange={e => this.setState({ descModule: e.target.value })} value={this.state.descModule} rows="4" class="form-control" placeholder="Desc" />
                                         </div>
                                         <div class="form-group mb-3">
                                           <label>Budget</label>

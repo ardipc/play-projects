@@ -205,7 +205,7 @@ class ProjectsIndex extends React.Component {
             <div class="row mb-2">
               <div class="col-sm-6">
                 <h1 class="m-0"> Welcome back <b>{this.state.name}</b></h1>
-                <p>{this.props.myUser.title}</p>
+                <p>{this.props.myUser.text}</p>
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">

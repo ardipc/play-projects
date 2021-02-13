@@ -169,6 +169,7 @@ class HomeIndex extends React.Component {
                 !this.state.name &&
                 <h1 class="m-0"> Welcome to PlayProjects</h1>
               }
+              <p>{this.props.myUser.text}</p>
               </div>
               <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">

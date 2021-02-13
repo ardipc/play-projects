@@ -4,6 +4,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 import axios from 'axios';
 import { API_URL } from '../../config/env';
+import { toast } from 'react-toastify'
 
 class LayoutNav extends React.Component {
 
@@ -71,7 +72,7 @@ class LayoutNav extends React.Component {
 
   }
 
-  daftarSistem = e => {
+  daftarSistem = async e => {
     e.preventDefault();
     let { name, email, pass } = this.state;
 
@@ -82,18 +83,24 @@ class LayoutNav extends React.Component {
       LevelID: '3'
     };
 
-    let url = `${API_URL}/api/user`;
-    axios.post(url, form).then(res => {
-      let data = res.data;
-      if(data.hasOwnProperty('insertId')) {
-        this.setState({ isLogin: true, isRegister: false, email: '', pass: '' })
-      } else {
-        this.setState({ message: 'Something wrong.' })
-      }
-    })
+    let cekEmail = await axios.get(`${API_URL}/api/user?_where=(Email,eq,${form.Email})`);
+    if(cekEmail.data.length > 0) {
+      toast.info(`Kamu sudah punya akun disini.`)
+    }
+    else {
+      let url = `${API_URL}/api/user`;
+      axios.post(url, form).then(res => {
+        let data = res.data;
+        if(data.hasOwnProperty('insertId')) {
+          this.setState({ isLogin: true, isRegister: false, email: '', pass: '' })
+        } else {
+          this.setState({ message: 'Something wrong.' })
+        }
+      })
+    }
   }
 
-  daftarTalent = e => {
+  daftarTalent = async e => {
     e.preventDefault();
     let { name, email, pass } = this.state;
 
@@ -104,15 +111,21 @@ class LayoutNav extends React.Component {
       LevelID: '2'
     };
 
-    let url = `${API_URL}/api/user`;
-    axios.post(url, form).then( res => {
-      let data = res.data;
-      if(data.hasOwnProperty('insertId')) {
-        this.setState({ isLogin: true, isRegister: false, email: '', pass:''})
-      } else {
-        this.setState({ message: 'Something wrong.'})
-      }
-    })
+    let cekEmail = await axios.get(`${API_URL}/api/user?_where=(Email,eq,${form.Email})`);
+    if(cekEmail.data.length > 0) {
+      toast.info(`Kamu sudah punya akun disini.`)
+    }
+    else {
+      let url = `${API_URL}/api/user`;
+      axios.post(url, form).then( res => {
+        let data = res.data;
+        if(data.hasOwnProperty('insertId')) {
+          this.setState({ isLogin: true, isRegister: false, email: '', pass:''})
+        } else {
+          this.setState({ message: 'Something wrong.'})
+        }
+      })
+    }
   }
 
   render() {
@@ -138,17 +151,14 @@ class LayoutNav extends React.Component {
                 <Link to="/" class="nav-link">Beranda</Link>
               </li>
 
+              <li class="nav-item">
+                <Link to="/talents" class="nav-link">Talents</Link>
+              </li>
+
               {
                 this.state.checkLogin && (this.state.level === 1 || this.state.level === 3) &&
                 <li class="nav-item">
                   <Link to="/projects" class="nav-link">Project</Link>
-                </li>
-              }
-
-              {
-                this.state.checkLogin && this.state.level === 2 &&
-                <li class="nav-item">
-                  <Link to="/jobs" class="nav-link">Jobs</Link>
                 </li>
               }
 
@@ -169,6 +179,11 @@ class LayoutNav extends React.Component {
           <Modal show={this.state.isLogin} onHide={this.closeLogin.bind(this)} animation={false}>
             <div class="card" style={{marginBottom: 0}}>
               <div class="card-body login-card-body">
+                <div class="text-center">
+                  <img src="/dist/img/AdminLTELogo.png" />
+                  <h4>PlayProject</h4>
+                </div>
+
                 <p class="login-box-msg">{this.state.message}</p>
 
                 <form onSubmit={this.masukSistem}>
@@ -199,7 +214,7 @@ class LayoutNav extends React.Component {
                 </form>
 
                 <p class="mb-1">
-                  <a href="#" onClick={this.showForgot}>I forgot my password</a>
+                  {/*<a href="#" onClick={this.showForgot}>I forgot my password</a>*/}
                 </p>
               </div>
             </div>
@@ -208,6 +223,11 @@ class LayoutNav extends React.Component {
           <Modal show={this.state.isForgot} onHide={this.closeForgot.bind(this)} animation={false}>
             <div class="card" style={{marginBottom: 0}}>
               <div class="card-body login-card-body">
+                <div class="text-center">
+                  <img src="/dist/img/AdminLTELogo.png" />
+                  <h4>PlayProject</h4>
+                </div>
+
                 <p class="login-box-msg">Sign in to find a new journey</p>
 
                 <form action="../../index3.html" method="post">
@@ -244,6 +264,11 @@ class LayoutNav extends React.Component {
           <Modal show={this.state.isRegister} onHide={this.closeRegister.bind(this)} animation={false}>
             <div class="card" style={{marginBottom: 0}}>
               <div class="card-body login-card-body">
+                <div class="text-center">
+                  <img src="/dist/img/AdminLTELogo.png" />
+                  <h4>PlayProject</h4>
+                </div>
+
                 <p class="login-box-msg">{this.state.message}</p>
 
                 <form>
@@ -312,12 +337,19 @@ class LayoutNav extends React.Component {
             {
               this.state.checkLogin &&
               <>
-              <li class="nav-item">
-                <Link to="/profil" class="nav-link">Profil</Link>
-              </li>
-              <li class="nav-item">
-                <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
-              </li>
+                {
+                  this.state.checkLogin && this.state.level === 2 &&
+                  <li class="nav-item">
+                    <Link to="/jobs" class="nav-link">Jobs</Link>
+                  </li>
+                }
+
+                <li class="nav-item">
+                  <Link to="/profil" class="nav-link">Profil</Link>
+                </li>
+                <li class="nav-item">
+                  <a onClick={this.keluarSistem} href="#" class="nav-link">Keluar</a>
+                </li>
               </>
             }
 
