@@ -247,112 +247,6 @@ class HomeAdmin extends React.Component {
               <div class="col-sm-6">
                 <div class="card">
                   <div class="card-header">
-                    <h3 class="card-title">Newest Module</h3>
-
-                    <div class="card-tools">
-                      {
-                        /**
-                        <button type="button" class="btn btn-tool border">
-                        <i class="fas fa-plus"></i> Create Project
-                        </button>
-                        */
-                      }
-                    </div>
-                  </div>
-                  <div class="card-body p-0">
-
-                    <table class="table table-striped projects">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Budget</th>
-                                <th>Client</th>
-                                {/*<th>Task</th>*/}
-                            </tr>
-                        </thead>
-                        <tbody>
-                          {
-                            this.state.modul.map(item => (
-                              <tr>
-                                  <td>#{item.IDModule}</td>
-                                  <td>
-                                    <a href="#" onClick={this.selectTask}
-                                      data-id={item.IDModule}
-                                      data-project={item.p_Name}
-                                      data-price={item.Budget}
-                                      data-desc={item.Description}
-                                      data-name={item.pm_Name}>
-                                      {item.pm_Name}
-                                    </a>
-                                    <br/>
-                                    <small>
-                                      Project on <Link to={`/projects-detail/${item.IDProject}`}>{item.p_Name}</Link>
-                                    </small>
-                                  </td>
-                                  <td>
-                                      {toRupiah(item.Budget)}
-                                  </td>
-                                  <td>
-                                      <ul class="list-inline">
-                                          <li class="list-inline-item">
-                                              <img title={item.u_Name} alt="Avatar" class="table-avatar" src={`https://ui-avatars.com/api/?name=${item.u_Name}`} />
-                                          </li>
-                                      </ul>
-                                  </td>
-                                  {/*
-                                  <td class="project-state">
-                                      <span class="badge badge-info">{item.t_Count}</span>
-                                  </td>
-                                  */}
-                              </tr>
-                            ))
-                          }
-
-                        </tbody>
-                    </table>
-
-                    <Modal show={this.state.isTask} onHide={() => this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })} animation={false}>
-                      <div class="card" style={{marginBottom: 0}}>
-                        <div class="card-body login-card-body">
-                          <h4 class="mb-3"><b>{this.state.project}</b></h4>
-
-                        <table class="table table-bordered">
-                          <tr>
-                            <td width="100px">Module</td>
-                            <td><b>{this.state.nameModul}</b></td>
-                          </tr>
-                          <tr>
-                            <td>Budget</td>
-                            <td><b>{toRupiah(this.state.price)}</b></td>
-                          </tr>
-                          <tr>
-                            <td>Description</td>
-                            <td class="p-1"><textarea value={this.state.description} rows={'5'} class="form-control" /></td>
-                          </tr>
-                        </table>
-
-                          {
-                            this.state.level === 2 &&
-                            <button onClick={this.letMeDoIt} data-user={this.state.userId} data-modul={this.state.idModul} class="btn btn-sm btn-primary mt-3">Let me do it</button>
-                          }
-
-                        </div>
-                      </div>
-                    </Modal>
-
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-6">
-                <Talents showImage={false} />
-              </div>
-
-
-              <div class="col-sm-6">
-                <div class="card">
-                  <div class="card-header">
                     <h3 class="card-title">Newest Projects</h3>
 
                     <div class="card-tools">
@@ -383,9 +277,20 @@ class HomeAdmin extends React.Component {
                               <tr>
                                   <td>#{item.p_IDProject}</td>
                                   <td>
-                                    <Link to={`/projects-detail/${item.p_IDProject}`}>
-                                      {item.p_Name}
-                                    </Link>
+                                    {
+                                      this.state.userId &&
+                                      <Link to={`/projects-detail/${item.p_IDProject}`}>
+                                        {item.p_Name}
+                                      </Link>
+                                    }
+
+                                    {
+                                      !this.state.userId &&
+                                      <Link onClick={e => { e.preventDefault(); toast.info(`Login dulu yaa...`) }}>
+                                        {item.p_Name}
+                                      </Link>
+                                    }
+
                                     <br/>
                                     <small>
                                       Created {moment(item.p_CreateAt).format('DD.MM.YYYY HH:mm')}
@@ -417,7 +322,10 @@ class HomeAdmin extends React.Component {
 
                   </div>
                 </div>
+              </div>
 
+              <div class="col-sm-6">
+                <Talents showImage={false} />
               </div>
 
             </div>

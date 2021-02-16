@@ -711,7 +711,7 @@ class ProjectDetail extends React.Component{
                                               {item.m_Name}
                                             </a>
                                           </td>
-                                          <td>{toRupiah(item.m_Budget)}</td>
+                                          {/*<td>{toRupiah(item.m_Budget)}</td>*/}
                                           <td>{item.m_IsDone ? <span class="badge badge-success">DONE</span> : <span class="badge badge-danger">WIP</span>}</td>
 
                                           <td>
@@ -750,7 +750,7 @@ class ProjectDetail extends React.Component{
                                               </a>
                                             }
                                           </td>
-                                          <td class="text-center">
+                                          <td class="text-right">
                                             {
                                               this.state.levelId === 1 &&
                                               <span>
@@ -921,13 +921,17 @@ class ProjectDetail extends React.Component{
 
                                     <table class="table table-bordered">
                                       <tr>
-                                        <td width="100px">Module</td>
+                                        <td width="100px">Modul</td>
                                         <td><b>{this.state.nameModul}</b></td>
                                       </tr>
+                                      {
+                                        /*
                                       <tr>
                                         <td>Budget</td>
                                         <td><b>{toRupiah(this.state.priceModul)}</b></td>
                                       </tr>
+                                        */
+                                      }
                                       <tr>
                                         <td>Description</td>
                                         <td class="p-1"><textarea value={this.state.descriptionModul} rows={'5'} class="form-control" /></td>
