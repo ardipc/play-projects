@@ -10,6 +10,7 @@ import moment from 'moment-timezone'
 import { toast } from 'react-toastify'
 
 import { connect } from 'react-redux'
+import Talents from '../talent/list';
 import { fetchMyUser } from '../../actions/myUser'
 
 const mapStateToProps = (state) => ({
@@ -43,7 +44,8 @@ class HomeAdmin extends React.Component {
     listTask: [],
 
     project: '',
-    price: 0
+    price: 0,
+    description: ''
   }
 
   selectTask = e => {
@@ -52,7 +54,8 @@ class HomeAdmin extends React.Component {
     let name = e.target.getAttribute('data-name')
     let project = e.target.getAttribute('data-project')
     let price = e.target.getAttribute('data-price')
-    this.setState({ idModul: id, nameModul: name, isTask: true, project, price })
+    let desc = e.target.getAttribute('data-desc')
+    this.setState({ idModul: id, nameModul: name, isTask: true, project, price, description: desc })
     this.fetchTaskByModule(id)
   }
 
@@ -122,7 +125,7 @@ class HomeAdmin extends React.Component {
 
   fetchModule() {
     let form = {
-      query: `SELECT pm.IDModule, pm.Name AS pm_Name, pm.Budget, pm.IsDone, pm.Assign, p.IDProject, p.StartDate, p.EndDate, p.Name AS p_Name, p.Client, u.Name AS u_Name, count(pt.IDTask) AS t_Count
+      query: `SELECT pm.IDModule, pm.Name AS pm_Name, pm.Budget, pm.Description, pm.IsDone, pm.Assign, p.IDProject, p.StartDate, p.EndDate, p.Name AS p_Name, p.Client, u.Name AS u_Name, count(pt.IDTask) AS t_Count
         FROM project_modul pm JOIN project p ON pm.ProjectID = p.IDProject JOIN user u ON p.Client = u.IDUser LEFT JOIN project_task pt ON pm.IDModule = pt.ModuleID
         WHERE pm.Assign IS null
         GROUP BY pm.IDModule
@@ -278,6 +281,7 @@ class HomeAdmin extends React.Component {
                                       data-id={item.IDModule}
                                       data-project={item.p_Name}
                                       data-price={item.Budget}
+                                      data-desc={item.Description}
                                       data-name={item.pm_Name}>
                                       {item.pm_Name}
                                     </a>
@@ -322,6 +326,10 @@ class HomeAdmin extends React.Component {
                             <td>Budget</td>
                             <td><b>{toRupiah(this.state.price)}</b></td>
                           </tr>
+                          <tr>
+                            <td>Description</td>
+                            <td class="p-1"><textarea value={this.state.description} rows={'5'} class="form-control" /></td>
+                          </tr>
                         </table>
 
                           {
@@ -335,6 +343,10 @@ class HomeAdmin extends React.Component {
 
                   </div>
                 </div>
+              </div>
+
+              <div class="col-sm-6">
+                <Talents showImage={false} />
               </div>
 
 
@@ -394,7 +406,7 @@ class HomeAdmin extends React.Component {
                                       </ul>
                                   </td>
                                   <td class="project-state">
-                                      <span class="badge badge-info">{item.s_Name}</span>
+                                    <span class={`badge badge-${item.s_Name === "Done" ? "success" : item.s_Name === "Canceled" ? "danger" : item.s_Name === "On Hold" ? "warning" : "primary"}`}>{item.s_Name.toUpperCase()}</span>
                                   </td>
                               </tr>
                             ))
