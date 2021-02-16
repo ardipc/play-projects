@@ -41,9 +41,16 @@ class ProjectDetail extends React.Component{
       listTalents: [],
 
       task: [],
-      isTask: false,
+      // isTask: false,
       idTask: '',
       nameTask: '',
+
+      isTask: false,
+      listTask: [],
+
+      projectName: '',
+      priceModul: 0,
+      descriptionModul: '',
 
       isCandidate: false,
       listCandidate: [],
@@ -362,6 +369,49 @@ class ProjectDetail extends React.Component{
       })
     }
 
+    selectTask = e => {
+      e.preventDefault()
+      let id = e.target.getAttribute('data-id')
+      let name = e.target.getAttribute('data-name')
+      let project = e.target.getAttribute('data-project')
+      let price = e.target.getAttribute('data-price')
+      let desc = e.target.getAttribute('data-desc')
+      // console.log(id, name, project, price, desc);
+      this.setState({ idModul: id, nameModul: name, isTask: true, priceModul: price, descriptionModul: desc })
+    }
+
+    letMeDoIt = e => {
+      e.preventDefault()
+      if(this.state.userId) {
+        if(this.state.levelId === 2) {
+          let userId = e.target.getAttribute('data-user')
+          let modulId = e.target.getAttribute('data-modul')
+
+          let cek = `${API_URL}/api/project_modul_candidate?_where=(UserID,eq,${userId})~and(ModuleID,eq,${modulId})`;
+          axios.get(cek).then(res => {
+            if(res.data.length === 1) {
+              toast.info(`Ehh, Kamu sudah pernah ambil modul ini lohh. Coba tunggu informasi dari Administrator yaa...`)
+            } else {
+              let form = {
+                UserID: userId,
+                ModuleID: modulId
+              };
+              let url = `${API_URL}/api/project_modul_candidate`;
+              axios.post(url, form).then(res => {
+                toast.success(`Tunggu konfirmasi Administrator untuk memilih kamu yaa.`)
+                this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })
+              })
+            }
+          })
+        } else {
+          toast.info(`Kamu bukan talent, jadi tidak bisa mengerjakan ini...`)
+        }
+      } else {
+        toast.info(`Masuk ke sistem dulu yaa...`)
+      }
+    }
+
+
     clearModule() {
       this.setState({ name: '', budget: '', assign: '', descModule: '' })
     }
@@ -465,7 +515,7 @@ class ProjectDetail extends React.Component{
       let url = `${API_URL}/api/xjoin`;
         url += `?_join=m.project_modul,_lj,u.user`;
         url += `&_on1=(m.Assign,eq,u.IDUser)`;
-        url += `&_fields=m.IDModule,m.Name,m.Budget,m.Assign,m.Description,u.Name,m.IsDone`;
+        url += `&_fields=m.IDModule,m.Name,m.Budget,m.Description,m.Assign,m.Description,u.Name,m.IsDone`;
         url += `&_where=(m.ProjectID,eq,${projectId})`;
       axios.get(url).then(res => {
         let summaryDone = res.data.filter(item => item.m_IsDone === 1);
@@ -652,11 +702,16 @@ class ProjectDetail extends React.Component{
                                         <tr>
                                           <td>#{item.m_IDModule}</td>
                                           <td>
-                                            <Link data-id={item.m_IDModule} data-name={item.m_Name}>
+                                            <a href="#" onClick={this.selectTask}
+                                              data-id={item.m_IDModule}
+                                              data-project={this.state.project.p_Name}
+                                              data-price={item.m_Budget}
+                                              data-desc={item.m_Description}
+                                              data-name={item.m_Name}>
                                               {item.m_Name}
-                                            </Link>
+                                            </a>
                                           </td>
-                                          <td>{toRupiah(item.m_Budget)}</td>
+                                          {/*<td>{toRupiah(item.m_Budget)}</td>*/}
                                           <td>{item.m_IsDone ? <span class="badge badge-success">DONE</span> : <span class="badge badge-danger">WIP</span>}</td>
 
                                           <td>
@@ -695,7 +750,7 @@ class ProjectDetail extends React.Component{
                                               </a>
                                             }
                                           </td>
-                                          <td class="text-center">
+                                          <td class="text-right">
                                             {
                                               this.state.levelId === 1 &&
                                               <span>
@@ -743,7 +798,7 @@ class ProjectDetail extends React.Component{
                                   </div>
                                 </Modal>
 
-                                <Modal dialogClassName="modal-lg" show={this.state.isTask} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
+                                <Modal dialogClassName="modal-lg" show={false} onHide={() => this.setState({ isTask: false, id: '', name: ''})} animation={false}>
                                   <div class="card" style={{marginBottom: 0}}>
                                     <div class="card-body login-card-body row">
                                       <div class="col-sm-12 mb-3 text-center">
@@ -859,6 +914,38 @@ class ProjectDetail extends React.Component{
                                   </div>
                                 </Modal>
 
+                                <Modal show={this.state.isTask} onHide={() => this.setState({ isTask: false, idModul: '', nameModul: '', listTask: [] })} animation={false}>
+                                  <div class="card" style={{marginBottom: 0}}>
+                                    <div class="card-body login-card-body">
+                                      <h4 class="mb-3"><b>{this.state.project.p_Name}</b></h4>
+
+                                    <table class="table table-bordered">
+                                      <tr>
+                                        <td width="100px">Modul</td>
+                                        <td><b>{this.state.nameModul}</b></td>
+                                      </tr>
+                                      {
+                                        /*
+                                      <tr>
+                                        <td>Budget</td>
+                                        <td><b>{toRupiah(this.state.priceModul)}</b></td>
+                                      </tr>
+                                        */
+                                      }
+                                      <tr>
+                                        <td>Description</td>
+                                        <td class="p-1"><textarea value={this.state.descriptionModul} rows={'5'} class="form-control" /></td>
+                                      </tr>
+                                    </table>
+
+                                      {
+                                        this.state.levelId === 2 &&
+                                        <button onClick={this.letMeDoIt} data-user={this.state.userId} data-modul={this.state.idModul} class="btn btn-sm btn-primary mt-3">Let me do it</button>
+                                      }
+
+                                    </div>
+                                  </div>
+                                </Modal>
                             </div>
                         </div>
 
