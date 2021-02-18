@@ -59,7 +59,7 @@ class LayoutSidebar extends React.Component {
                   </Link>
                 </li>
                 <li class="nav-item">
-                  <Link to="/talents" class="nav-link">
+                  <Link to="/talents-all" class="nav-link">
                     <i class="nav-icon fas fa-users"></i>
                     <p>
                       Talents
