@@ -43,7 +43,7 @@ const menuAdmin = [
   {label: 'User', path: '/project-status', component: Status },
 
   {label: 'Clients', path: '/clients', component: Clients },
-  {label: 'Talents', path: '/talents', component: Talents },
+  {label: 'Talents', path: '/talents-all', component: Talents },
   {label: 'Admins', path: '/admins', component: Admins },
 ];
 
