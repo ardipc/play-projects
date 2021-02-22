@@ -118,7 +118,7 @@ class HomeClient extends React.Component {
     axios.get(url).then(res => {
       let client = res.data.filter(item => item.LevelID === 2);
       let talent = res.data.filter(item => item.LevelID === 3);
-      this.setState({ client: client.length, talent: talent.length })
+      this.setState({ client: talent.length, talent: client.length })
     })
   }
 
