@@ -12,8 +12,8 @@ class LayoutNav extends React.Component {
     checkLogin: localStorage.getItem('isLogin'),
     level: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).LevelID : '',
     isLogin: false,
-    isRegister: false,
     isForgot: false,
+    isRegister: false,
 
     name: '',
     email: '',

@@ -11,6 +11,7 @@ import { toast } from 'react-toastify'
 
 import Client from './client';
 import Admin from './admin';
+import Anonym from './anonym';
 
 class HomeIndex extends React.Component {
 
@@ -20,7 +21,7 @@ class HomeIndex extends React.Component {
 
   render() {
 
-    const Dash = ({level}) => level == 3 ? <Client /> : <Admin />;
+    const Dash = ({level}) => level == 3 ? <Client /> : level == 1 ? <Admin /> : <Anonym />;
 
     return (
       <Dash level={this.state.level} />
